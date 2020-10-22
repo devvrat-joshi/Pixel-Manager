@@ -13,7 +13,7 @@ def empty_right(stdscr):
     per = " "*(w//5)
     stdscr.attron(curses.color_pair(3))
     for i in range(1,p):
-        stdscr.addstr(i,w//5+1," "*(4*w//5-2))
+        stdscr.addstr(i,w//5," "*(4*w//5-2))
 
 def print_folder(stdscr,row):
     try:
@@ -111,7 +111,17 @@ def scrolldown(stdscr,cur_row):
             y = idx+1-cur_row+h-3
             stdscr.addstr(y,x,i)
     stdscr.refresh()
-    # exit()
+    # 
+
+import subprocess
+
+def open_file(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener ="open" if sys.platform == "darwin" else filename
+        subprocess.call([opener, filename])
+
 
 def main(stdscr):
     global menu
@@ -135,23 +145,73 @@ def main(stdscr):
     print_menu(stdscr,listings,0,"")
     stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5) + curses.A_BOLD)
     terminal = 0
+    k = 0
+    onboard = ""
     while 1:
+        enter = 0
         key = stdscr.getch()
+        if key == 8 or key == 127 or key == curses.KEY_BACKSPACE and terminal==1 and k>=0:
+            if k<0:
+                continue
+            k-=1
+            onboard = onboard[:-1]
+            stdscr.addstr("\b \b")
+        elif terminal==1 and key!=263 and key!=258 and key!=259 and key!=261:
+            k+=1
+            onboard+=chr(key)
+            # f = open("some.txt","w")
+            # f.write(str(key))
+            # f.close()
+            if onboard=="cd ..":
+                old_menu = path.split("/")[-1][:-1]
+                if path==getpass.getuser()+":"+"/"+"$":
+                    continue
+                os.chdir("..")
+                path = getpass.getuser()+":"+os.getcwd()+"$"
+                menu = os.listdir()
+                for i in range(len(menu)):
+                    menu[i] = menu[i].lower()
+                cur_row = menu.index(old_menu.lower())+1
+                l = len(menu)
+                listings = []
+                for i in menu:
+                    listings.append(os.path.isdir(i))
+                print_menu(stdscr,listings,1,old_menu)
+                print_folder(stdscr,old_menu)
+                if cur_row<=l:
+                    stdscr.attron(curses.color_pair(4))
+                    stdscr.addstr(h-2,0," "*(w-1))
+                    stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
+                if terminal==1:
+                    stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+                    stdscr.attron(curses.color_pair(6))
+                    stdscr.addstr(0,len("Terminal: "+path)+1,"")
+                else:
+                    stdscr.addstr(0,0," "*w,curses.color_pair(5))
+                    stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))    
+                onboard=""
+            else:
+                stdscr.addch(key)
+            
+            
         if key==curses.KEY_BTAB:
             if terminal==0:
                 pp = "Terminal: "+path
                 stdscr.addstr(0,0,pp+" "*(w-len(path)-10),curses.color_pair(6))
                 terminal = 1
-                curses.echo()
-                stdscr.addstr(0,len(pp)+1," ",curses.color_pair(6))
-
+                k = 0
+                curses.cbreak()
+                stdscr.addstr(0,len(pp)," ",curses.color_pair(6))
+                curses.curs_set(1)
+                stdscr.attron(curses.color_pair(6))
             else:
                 stdscr.addstr(0,0," "*w,curses.color_pair(5))
                 stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
-
+                curses.curs_set(0)
                 curses.noecho()
                 terminal = 0
-        elif key==curses.KEY_DOWN:
+        elif key==curses.KEY_DOWN and terminal==0:
+            
             if cur_row==len(menu):
                 continue
             if cur_row>=l or cur_row>h-4:
@@ -187,7 +247,8 @@ def main(stdscr):
                 stdscr.attron(curses.color_pair(4))
                 stdscr.addstr(h-2,0," "*(w-1))
                 stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
-        elif key==curses.KEY_UP:
+        elif key==curses.KEY_UP and terminal==0:
+            
             if cur_row==1:
                     continue
             if cur_row>=h-2:
@@ -223,9 +284,9 @@ def main(stdscr):
             stdscr.addstr(h-2,0," "*(w-1))
             stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
         elif key==curses.KEY_LEFT:
+            
             old_menu = path.split("/")[-1][:-1]
             if path==getpass.getuser()+":"+"/"+"$":
-                
                 continue
             os.chdir("..")
             path = getpass.getuser()+":"+os.getcwd()+"$"
@@ -245,11 +306,15 @@ def main(stdscr):
                 stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
             if terminal==1:
                 stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+                stdscr.attron(curses.color_pair(6))
+                stdscr.addstr(0,len("Terminal: "+path)+1,"")
             else:
                 stdscr.addstr(0,0," "*w,curses.color_pair(5))
                 stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
         elif key==curses.KEY_ENTER or key==10 or key==13 or key==curses.KEY_RIGHT:
+            
             if not os.path.isdir(menu[cur_row-1]):
+                os.system("vim "+menu[cur_row-1])
                 continue
             old_row = cur_row
             os.chdir(menu[cur_row-1])
@@ -268,9 +333,11 @@ def main(stdscr):
             print_menu(stdscr,listings,0,"")
             if terminal==1:
                 stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+                stdscr.attron(curses.color_pair(6))
+                stdscr.addstr(0,len("Terminal: "+path)+1,"")
             else:
                 stdscr.addstr(0,0," "*w,curses.color_pair(5))
                 stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
-        stdscr.refresh()
+        # stdscr.refresh()
     curses.curs_set(0)
 curses.wrapper(main)
