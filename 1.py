@@ -1,18 +1,21 @@
 #!/usr/bin/python3.8
 import curses,time,os
 import getpass,sys,signal
-
+import shutil
+from distutils.dir_util import copy_tree
 os.chdir(".")
 menu = os.listdir()
 
 file = "It is a File"
+copy = "Press c to copy the file: "
+search = "Ctrl + S to search: "
 
 def empty_right(stdscr):
     p,w = stdscr.getmaxyx()
     per10screen = w//5
     per = " "*(w//5)
     stdscr.attron(curses.color_pair(3))
-    for i in range(1,p):
+    for i in range(1,p-2):
         stdscr.addstr(i,w//5," "*(4*w//5-2))
 
 def print_folder(stdscr,row):
@@ -111,17 +114,6 @@ def scrolldown(stdscr,cur_row):
             y = idx+1-cur_row+h-3
             stdscr.addstr(y,x,i)
     stdscr.refresh()
-    # 
-
-import subprocess
-
-def open_file(filename):
-    if sys.platform == "win32":
-        os.startfile(filename)
-    else:
-        opener ="open" if sys.platform == "darwin" else filename
-        subprocess.call([opener, filename])
-
 
 def main(stdscr):
     global menu
@@ -134,6 +126,12 @@ def main(stdscr):
     curses.init_pair(1, curses.COLOR_WHITE, 34)
     curses.init_pair(2, curses.COLOR_WHITE, 18)
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(7,curses.COLOR_WHITE, 57)
+    curses.init_pair(8,curses.COLOR_WHITE, 105)
+
+    stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
+    stdscr.addstr(h-1,3*w//5-1,search+" "*(2*w//5-len(search)+1),curses.color_pair(8))
+    stdscr.addstr(h-1,0,copy,curses.color_pair(7))
     cur_row = 1
     maxi = 0
     for i in menu:
@@ -147,9 +145,37 @@ def main(stdscr):
     terminal = 0
     k = 0
     onboard = ""
+    a = 0
     while 1:
         enter = 0
         key = stdscr.getch()
+        if key==99 and not terminal:
+            stdscr.addstr(h-1,len(copy),menu[cur_row-1]+", If this is destination path press v",curses.color_pair(7))
+            folder_to_be_copied = os.getcwd()+"/"+menu[cur_row-1]
+            folder = menu[cur_row-1]
+            if listings[cur_row-1]==1:
+                fold = True
+            else:
+                fold = False
+            a = 1
+            continue
+        if key==118 and a==1 and not terminal:
+            if not fold:
+                shutil.copy(folder_to_be_copied, os.getcwd()+"/"+folder)
+            else:
+                copy_tree(folder_to_be_copied, os.getcwd()+"/"+folder)
+            stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
+            stdscr.addstr(h-1,0,copy,curses.color_pair(7))
+            stdscr.addstr(h-1,3*w//5-1,search+" "*(2*w//5-len(search)+1),curses.color_pair(8))
+            menu = os.listdir()
+            listings = []
+            for i in menu:
+                listings.append(os.path.isdir(i))
+            print_menu(stdscr,listings,0,folder)
+            l = len(menu)
+            stdscr.addstr(0,0," "*w,curses.color_pair(5))
+            stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
+            a = 0
         if key == 8 or key == 127 or key == curses.KEY_BACKSPACE and terminal==1 and k>=0:
             if k<0:
                 continue
@@ -205,6 +231,7 @@ def main(stdscr):
                 curses.curs_set(1)
                 stdscr.attron(curses.color_pair(6))
             else:
+                onboard = ""
                 stdscr.addstr(0,0," "*w,curses.color_pair(5))
                 stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
                 curses.curs_set(0)
