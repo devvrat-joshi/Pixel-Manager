@@ -1,6 +1,6 @@
 #!/usr/bin/python3.8
 import curses,time,os
-import getpass,sys
+import getpass,sys,signal
 
 os.chdir(".")
 menu = os.listdir()
@@ -123,6 +123,7 @@ def main(stdscr):
     per10screen = w//5
     curses.init_pair(1, curses.COLOR_WHITE, 34)
     curses.init_pair(2, curses.COLOR_WHITE, 18)
+    curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     cur_row = 1
     maxi = 0
     for i in menu:
@@ -133,9 +134,24 @@ def main(stdscr):
     path = getpass.getuser()+":"+os.getcwd()+"$"
     print_menu(stdscr,listings,0,"")
     stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5) + curses.A_BOLD)
+    terminal = 0
     while 1:
         key = stdscr.getch()
-        if key==curses.KEY_DOWN:
+        if key==curses.KEY_BTAB:
+            if terminal==0:
+                pp = "Terminal: "+path
+                stdscr.addstr(0,0,pp+" "*(w-len(path)-10),curses.color_pair(6))
+                terminal = 1
+                curses.echo()
+                stdscr.addstr(0,len(pp)+1," ",curses.color_pair(6))
+
+            else:
+                stdscr.addstr(0,0," "*w,curses.color_pair(5))
+                stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
+
+                curses.noecho()
+                terminal = 0
+        elif key==curses.KEY_DOWN:
             if cur_row==len(menu):
                 continue
             if cur_row>=l or cur_row>h-4:
@@ -227,7 +243,11 @@ def main(stdscr):
                 stdscr.attron(curses.color_pair(4))
                 stdscr.addstr(h-2,0," "*(w-1))
                 stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
-            stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
+            if terminal==1:
+                stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+            else:
+                stdscr.addstr(0,0," "*w,curses.color_pair(5))
+                stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
         elif key==curses.KEY_ENTER or key==10 or key==13 or key==curses.KEY_RIGHT:
             if not os.path.isdir(menu[cur_row-1]):
                 continue
@@ -246,7 +266,11 @@ def main(stdscr):
             for i in menu:
                 listings.append(os.path.isdir(i))
             print_menu(stdscr,listings,0,"")
-            stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
+            if terminal==1:
+                stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+            else:
+                stdscr.addstr(0,0," "*w,curses.color_pair(5))
+                stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
         stdscr.refresh()
     curses.curs_set(0)
 curses.wrapper(main)
