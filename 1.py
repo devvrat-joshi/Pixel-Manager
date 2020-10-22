@@ -2,7 +2,7 @@
 import curses,time,os
 import getpass,sys
 
-os.chdir(sys.argv[1])
+os.chdir(".")
 menu = os.listdir()
 
 file = "It is a File"
@@ -21,7 +21,7 @@ def print_folder(stdscr,row):
         p,w = stdscr.getmaxyx()
         per10screen = w//5
         empty_right(stdscr)
-        for i in range(len(h)):
+        for i in range(p-3):
             stdscr.attron(curses.color_pair(3))
             if len(h[i])<per10screen:
                 l = h[i]+" "*(per10screen-len(row))
@@ -41,7 +41,7 @@ def print_menu(stdscr,listings,n,this):
     per10screen = w//5
     maxi = 0
     per = " "*(w//5)
-    for i in range(1,h-1):
+    for i in range(1,h-2):
         stdscr.attron(curses.color_pair(2))
         stdscr.addstr(i,0,per)
     stdscr.attroff(curses.color_pair(2))
@@ -55,8 +55,8 @@ def print_menu(stdscr,listings,n,this):
         empty_right(stdscr)
         stdscr.addstr(h//2,w//2-len(file)//2,file,curses.color_pair(3))
     stdscr.attron(curses.color_pair(4))
-    stdscr.addstr(h-1,0," "*(w-1))
-    stdscr.addstr(h-1,w//2-len(menu[0])//2,menu[0])
+    stdscr.addstr(h-2,0," "*(w-1))
+    stdscr.addstr(h-2,w//2-len(menu[0])//2,menu[0])
     for idx, row in enumerate(menu):
         if (idx==0 and n==0) or this==row:
             stdscr.attron(curses.color_pair(1))
@@ -69,7 +69,7 @@ def print_menu(stdscr,listings,n,this):
             stdscr.addstr(y,x,i)
             stdscr.attroff(curses.color_pair(1))
         else:
-            if idx>=h-2:
+            if idx>=h-3:
                 break
             stdscr.attron(curses.color_pair(2))
             if len(row)<per10screen:
@@ -88,7 +88,7 @@ def scrolldown(stdscr,cur_row):
     maxi = 0
     per = " "*(w//5)
     stdscr.attron(curses.color_pair(2))
-    for idx in range(cur_row-h+2,cur_row):
+    for idx in range(cur_row-h+3,cur_row):
         if len(menu[idx])<per10screen:
             i = menu[idx]+" "*(per10screen-len(menu[idx]))
         else:
@@ -100,15 +100,15 @@ def scrolldown(stdscr,cur_row):
             else:
                 i = menu[idx][:per10screen]
             x = 0
-            y = idx+1-cur_row+h-2
+            y = idx+1-cur_row+h-3
             stdscr.addstr(y,x,i)
             stdscr.attroff(curses.color_pair(1))
             stdscr.attron(curses.color_pair(4))
-            stdscr.addstr(h-1,0," "*(w-1))
-            stdscr.addstr(h-1,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
+            stdscr.addstr(h-2,0," "*(w-1))
+            stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
         else:
             x = 0
-            y = idx+1-cur_row+h-2
+            y = idx+1-cur_row+h-3
             stdscr.addstr(y,x,i)
     stdscr.refresh()
     # exit()
@@ -138,7 +138,7 @@ def main(stdscr):
         if key==curses.KEY_DOWN:
             if cur_row==len(menu):
                 continue
-            if cur_row>=l or cur_row>h-3:
+            if cur_row>=l or cur_row>h-4:
                 if listings[cur_row]:
                     print_folder(stdscr,menu[cur_row])
                 else:
@@ -169,12 +169,12 @@ def main(stdscr):
             stdscr.attroff(curses.color_pair(1))
             if cur_row<=l:
                 stdscr.attron(curses.color_pair(4))
-                stdscr.addstr(h-1,0," "*(w-1))
-                stdscr.addstr(h-1,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
+                stdscr.addstr(h-2,0," "*(w-1))
+                stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
         elif key==curses.KEY_UP:
             if cur_row==1:
                     continue
-            if cur_row>=h-1:
+            if cur_row>=h-2:
                 cur_row-=1
                 if listings[cur_row-1]:
                     print_folder(stdscr,menu[cur_row-1])
@@ -204,14 +204,19 @@ def main(stdscr):
             stdscr.addstr(cur_row,0,x)
             stdscr.attroff(curses.color_pair(1))
             stdscr.attron(curses.color_pair(4))
-            stdscr.addstr(h-1,0," "*(w-1))
-            stdscr.addstr(h-1,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
+            stdscr.addstr(h-2,0," "*(w-1))
+            stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
         elif key==curses.KEY_LEFT:
             old_menu = path.split("/")[-1][:-1]
+            if path==getpass.getuser()+":"+"/"+"$":
+                
+                continue
             os.chdir("..")
             path = getpass.getuser()+":"+os.getcwd()+"$"
             menu = os.listdir()
-            cur_row = menu.index(old_menu)+1
+            for i in range(len(menu)):
+                menu[i] = menu[i].lower()
+            cur_row = menu.index(old_menu.lower())+1
             l = len(menu)
             listings = []
             for i in menu:
@@ -220,8 +225,8 @@ def main(stdscr):
             print_folder(stdscr,old_menu)
             if cur_row<=l:
                 stdscr.attron(curses.color_pair(4))
-                stdscr.addstr(h-1,0," "*(w-1))
-                stdscr.addstr(h-1,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
+                stdscr.addstr(h-2,0," "*(w-1))
+                stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
             stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
         elif key==curses.KEY_ENTER or key==10 or key==13 or key==curses.KEY_RIGHT:
             if not os.path.isdir(menu[cur_row-1]):
