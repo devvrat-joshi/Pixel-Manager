@@ -3,6 +3,7 @@ import curses,time,os
 import getpass,sys,signal
 import shutil
 from distutils.dir_util import copy_tree
+from datetime import datetime
 os.chdir(".")
 menu = os.listdir()
 
@@ -128,6 +129,7 @@ def main(stdscr):
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(7,curses.COLOR_WHITE, 57)
     curses.init_pair(8,curses.COLOR_WHITE, 105)
+    curses.init_pair(9,curses.COLOR_WHITE, 7)
 
     stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
     stdscr.addstr(h-1,3*w//5-1,search+" "*(2*w//5-len(search)+1),curses.color_pair(8))
@@ -146,11 +148,29 @@ def main(stdscr):
     k = 0
     onboard = ""
     a = 0
+    night = 0
+    date = str(time.ctime())
+    stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
     while 1:
         enter = 0
         key = stdscr.getch()
+        date = time.ctime()
+        if key==110 and not terminal:
+            if night==0:
+                curses.init_pair(2, curses.COLOR_WHITE, 161)
+                curses.init_pair(3, curses.COLOR_WHITE, 1)
+                night = 1
+            else:
+                curses.init_pair(2, curses.COLOR_WHITE, 18)
+                curses.init_pair(3, curses.COLOR_WHITE, 27)
+                night = 0
+            # time.sleep(2)
         if key==99 and not terminal:
-            stdscr.addstr(h-1,len(copy),menu[cur_row-1]+", If this is destination path press v",curses.color_pair(7))
+            k = menu[cur_row-1]
+            if len(k)>3*w//5-30:
+                stdscr.addstr(h-1,len(copy),k[:3*w//5-30],curses.color_pair(7))
+            else:
+                stdscr.addstr(h-1,len(copy),k,curses.color_pair(7))
             folder_to_be_copied = os.getcwd()+"/"+menu[cur_row-1]
             folder = menu[cur_row-1]
             if listings[cur_row-1]==1:
@@ -191,6 +211,9 @@ def main(stdscr):
             if onboard=="cd ..":
                 old_menu = path.split("/")[-1][:-1]
                 if path==getpass.getuser()+":"+"/"+"$":
+                    onboard = "cd .."
+                    k = 4
+                    stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                     continue
                 os.chdir("..")
                 path = getpass.getuser()+":"+os.getcwd()+"$"
@@ -240,6 +263,7 @@ def main(stdscr):
         elif key==curses.KEY_DOWN and terminal==0:
             
             if cur_row==len(menu):
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             if cur_row>=l or cur_row>h-4:
                 if listings[cur_row]:
@@ -249,6 +273,7 @@ def main(stdscr):
                     stdscr.addstr(h//2,w//2-len(file)//2,file,curses.color_pair(3))
                 cur_row+=1
                 scrolldown(stdscr,cur_row)
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             if len(menu[cur_row-1])<per10screen:
                 x = menu[cur_row-1]+" "*((per10screen-len(menu[cur_row-1])))
@@ -277,7 +302,8 @@ def main(stdscr):
         elif key==curses.KEY_UP and terminal==0:
             
             if cur_row==1:
-                    continue
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
+                continue
             if cur_row>=h-2:
                 cur_row-=1
                 if listings[cur_row-1]:
@@ -286,6 +312,7 @@ def main(stdscr):
                     empty_right(stdscr)
                     stdscr.addstr(h//2,w//2-len(file)//2,file,curses.color_pair(3))
                 scrolldown(stdscr,cur_row)
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             if len(menu[cur_row-1])<per10screen:
                 x = menu[cur_row-1]+" "*((per10screen-len(menu[cur_row-1])))
@@ -314,6 +341,7 @@ def main(stdscr):
             
             old_menu = path.split("/")[-1][:-1]
             if path==getpass.getuser()+":"+"/"+"$":
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             os.chdir("..")
             path = getpass.getuser()+":"+os.getcwd()+"$"
@@ -342,6 +370,7 @@ def main(stdscr):
             
             if not os.path.isdir(menu[cur_row-1]):
                 os.system("vim "+menu[cur_row-1])
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             old_row = cur_row
             os.chdir(menu[cur_row-1])
@@ -365,6 +394,10 @@ def main(stdscr):
             else:
                 stdscr.addstr(0,0," "*w,curses.color_pair(5))
                 stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
-        # stdscr.refresh()
+        stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
+        if terminal==1:
+                stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+                stdscr.attron(curses.color_pair(6))
+                stdscr.addstr(0,len("Terminal: "+path)+1,onboard)
     curses.curs_set(0)
 curses.wrapper(main)
