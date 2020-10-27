@@ -207,7 +207,7 @@ def main(stdscr):
                     empty_right(stdscr)
                     stdscr.addstr(h//2,w//2-len(file)//2,file,curses.color_pair(3))
                 cur_row+=1
-                scrolldown(stdscr,cur_row)
+                scrolldown(stdscr,cur_row,menu)
                 stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             if len(menu[cur_row-1])<per10screen:
@@ -246,7 +246,7 @@ def main(stdscr):
                 else:
                     empty_right(stdscr)
                     stdscr.addstr(h//2,w//2-len(file)//2,file,curses.color_pair(3))
-                scrolldown(stdscr,cur_row)
+                scrolldown(stdscr,cur_row,menu)
                 stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
                 continue
             if len(menu[cur_row-1])<per10screen:

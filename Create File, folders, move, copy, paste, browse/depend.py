@@ -81,8 +81,8 @@ def print_menu(stdscr,listings,n,this,menu):
             stdscr.addstr(y,x,i)
     stdscr.refresh()
 
-def scrolldown(stdscr,cur_row):
-    global menu
+def scrolldown(stdscr,cur_row,menu):
+    # global menu
     h,w = stdscr.getmaxyx()
     per10screen = w//5
     maxi = 0
