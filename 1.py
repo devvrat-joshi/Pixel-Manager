@@ -116,6 +116,9 @@ def scrolldown(stdscr,cur_row):
             stdscr.addstr(y,x,i)
     stdscr.refresh()
 
+def stat(stdscr,listings,menu,cur_row):
+    pass
+
 def main(stdscr):
     global menu
     curses.curs_set(0)
@@ -130,10 +133,6 @@ def main(stdscr):
     curses.init_pair(7,curses.COLOR_WHITE, 57)
     curses.init_pair(8,curses.COLOR_WHITE, 105)
     curses.init_pair(9,curses.COLOR_WHITE, 7)
-
-    stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
-    stdscr.addstr(h-1,3*w//5-1,search+" "*(2*w//5-len(search)+1),curses.color_pair(8))
-    stdscr.addstr(h-1,0,copy,curses.color_pair(7))
     cur_row = 1
     maxi = 0
     for i in menu:
@@ -151,6 +150,9 @@ def main(stdscr):
     night = 0
     date = str(time.ctime())
     stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
+    stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
+    stdscr.addstr(h-1,3*w//5-1,search+" "*(2*w//5-len(search)+1),curses.color_pair(8))
+    stdscr.addstr(h-1,0,copy,curses.color_pair(7))
     while 1:
         enter = 0
         key = stdscr.getch()
