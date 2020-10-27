@@ -13,16 +13,14 @@ os.stat(".")
 print(time.ctime((os.stat(".").st_ctime)))
 def show_stat(stdscr,file,dira):
     h,w = stdscr.getmaxyx()
-    wn = 3*w//10-1
-    curses.init_pair(11,curses.COLOR_WHITE,25)
+    wn = 37
     st = os.stat(file)
     if dira:
         dira = "Folder"
     else:
         dira = "File"
     kb = 2**10
-    for i in range(1,h-2):
-        stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
+    
     stdscr.addstr(1,w-wn+wn//2-1,"Stats",curses.color_pair(11))    
     stdscr.addstr(2,w-wn+1,"Created  : "+str(time.ctime(st.st_ctime)),curses.color_pair(11))
     stdscr.addstr(3,w-wn+1,"Modified : "+str(time.ctime(st.st_atime)),curses.color_pair(11))

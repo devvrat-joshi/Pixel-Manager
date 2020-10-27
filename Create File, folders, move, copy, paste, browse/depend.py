@@ -15,7 +15,8 @@ def empty_right(stdscr):
     p,w = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(3))
     for i in range(1,p-2):
-        stdscr.addstr(i,w//5," "*(4*w//5-2))
+        stdscr.addstr(i,w//5," "*(4*w//5-39))
+        stdscr.refresh()
 
 def print_folder(stdscr,row):
     try:

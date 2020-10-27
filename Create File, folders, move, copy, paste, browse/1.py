@@ -50,6 +50,10 @@ def main(stdscr):
     stdscr.addstr(h-1,2*w//5-1,options+" "*(3*w//5-len(options)+1),curses.color_pair(8))
     stdscr.addstr(h-1,0,copy,curses.color_pair(7))
     show_stat(stdscr,menu[0],listings[cur_row-1])
+    curses.init_pair(11,curses.COLOR_WHITE,25)
+    wn = 37
+    for i in range(1,h-2):
+        stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
     while 1:
         show_stat(stdscr,menu[cur_row-1],listings[cur_row-1])
         enter = 0
@@ -334,6 +338,7 @@ def main(stdscr):
             except:
                 empty_right(stdscr)
                 stdscr.addstr(h//2,w//2-len(permission)//2,permission,curses.color_pair(3))
+                continue
                 # stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
         if terminal==1:
                 stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
