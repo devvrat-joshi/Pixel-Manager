@@ -118,7 +118,7 @@ def main(stdscr):
             bb = 1
             continue
         if key==118 and bb==1 and not terminal:
-            shutil.move(folder_to_be_copied,os.getcwd())
+            shutil.move(folder_to_be_copied,os.getcwd()+"/")
             stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
             stdscr.addstr(h-1,2*w//5-1,options+" "*(3*w//5-len(options)+1),curses.color_pair(8))
             stdscr.addstr(h-1,0,copy,curses.color_pair(7))
