@@ -8,6 +8,7 @@ from depend import *
 os.chdir(".")
 menu = os.listdir()
 
+permission = "Permission Denied"
 file = "It is a File"
 copy = "Press c to copy the file: "
 options = "m : move, k : create file, g : create folder"
@@ -260,34 +261,38 @@ def main(stdscr):
                 stdscr.addstr(0,0," "*w,curses.color_pair(5))
                 stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
         elif key==curses.KEY_ENTER or key==10 or key==13 or key==curses.KEY_RIGHT:
-            
-            if not os.path.isdir(menu[cur_row-1]):
-                os.system("vim "+menu[cur_row-1])
-                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
-                continue
-            old_row = cur_row
-            os.chdir(menu[cur_row-1])
-            cur_row=1
-            menu = os.listdir()
-            if len(menu)==0:
-                os.chdir("..")
-                cur_row=old_row
+            try:
+                if not os.path.isdir(menu[cur_row-1]):
+                    os.system("vim "+menu[cur_row-1])
+                    stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
+                    continue
+                old_row = cur_row
+                os.chdir(menu[cur_row-1])
+                cur_row=1
                 menu = os.listdir()
-                continue
-            path = getpass.getuser()+":"+os.getcwd()+"$"
-            l = len(menu)
-            listings = []
-            for i in menu:
-                listings.append(os.path.isdir(i))
-            print_menu(stdscr,listings,0,"",menu)
-            if terminal==1:
-                stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
-                stdscr.attron(curses.color_pair(6))
-                stdscr.addstr(0,len("Terminal: "+path)+1,"")
-            else:
-                stdscr.addstr(0,0," "*w,curses.color_pair(5))
-                stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
-        stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
+                if len(menu)==0:
+                    os.chdir("..")
+                    cur_row=old_row
+                    menu = os.listdir()
+                    continue
+                path = getpass.getuser()+":"+os.getcwd()+"$"
+                l = len(menu)
+                listings = []
+                for i in menu:
+                    listings.append(os.path.isdir(i))
+                print_menu(stdscr,listings,0,"",menu)
+                if terminal==1:
+                    stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
+                    stdscr.attron(curses.color_pair(6))
+                    stdscr.addstr(0,len("Terminal: "+path)+1,"")
+                else:
+                    stdscr.addstr(0,0," "*w,curses.color_pair(5))
+                    stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
+            except:
+                empty_right(stdscr)
+                stdscr.addstr(h//2,w//2-len(permission)//2,permission,curses.color_pair(3))
+                stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
         if terminal==1:
                 stdscr.addstr(0,0,"Terminal: "+path+" "*(w-len(path)-10),curses.color_pair(6))
                 stdscr.attron(curses.color_pair(6))
