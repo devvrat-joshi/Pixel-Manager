@@ -14,6 +14,13 @@ print(time.ctime((os.stat(".").st_ctime)))
 def show_stat(stdscr,file,dira):
     h,w = stdscr.getmaxyx()
     wn = 37
+    if file=="Empty Folder":
+        for i in range(2,10):
+            stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
+        stdscr.addstr(1,w-wn+wn//2-1,"Stats",curses.color_pair(11))  
+        stdscr.addstr(2,w-wn+wn//2-7,"Nothing to show",curses.color_pair(11))
+        return
+    stdscr.addstr(h-3,w-wn," "*wn,curses.color_pair(11)) 
     try:
         st = os.stat(file)
     except:

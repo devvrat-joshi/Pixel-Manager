@@ -50,6 +50,6 @@ def getform(stdscr,menu,listings,q):
     listings = []
     for i in menu:
         listings.append(os.path.isdir(i))
-    return menu,listings
+    return menu,listings,1
 
 # def create(name):

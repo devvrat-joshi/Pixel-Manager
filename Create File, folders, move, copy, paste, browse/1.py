@@ -57,15 +57,19 @@ def main(stdscr):
     curses.curs_set(0)
     while 1:
         show_stat(stdscr,menu[cur_row-1],listings[cur_row-1])
+        if not terminal:
+            stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5) + curses.A_BOLD)
         enter = 0
         key = stdscr.getch()
         # date = time.ctime()
         if key==ord("k") and not terminal:
-            menu,listings = getform(stdscr,menu,listings,0)
+            menu,listings,cur_row = getform(stdscr,menu,listings,0)
             l = len(menu)
+            continue
         if key==ord("g") and not terminal:
-            menu,listings = getform(stdscr,menu,listings,1)
+            menu,listings,cur_row = getform(stdscr,menu,listings,1)
             l = len(menu)
+            continue
         if key==110 and not terminal:
             if night==0:
                 curses.init_pair(2, curses.COLOR_WHITE, 161)
@@ -318,10 +322,7 @@ def main(stdscr):
                 cur_row=1
                 menu = os.listdir()
                 if len(menu)==0:
-                    os.chdir("..")
-                    cur_row=old_row
-                    menu = os.listdir()
-                    continue
+                    menu = ["Empty Folder"]
                 path = getpass.getuser()+":"+os.getcwd()+"$"
                 l = len(menu)
                 listings = []
