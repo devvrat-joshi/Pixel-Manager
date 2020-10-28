@@ -107,7 +107,8 @@ def main(stdscr):
             listings = []
             for i in menu:
                 listings.append(os.path.isdir(i))
-            print_menu(stdscr,listings,0,folder,menu)
+            cur_row = menu.index(folder)+1
+            print_menu(stdscr,listings,cur_row,folder,menu)
             l = len(menu)
             stdscr.addstr(0,0," "*w,curses.color_pair(5))
             stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
@@ -135,7 +136,8 @@ def main(stdscr):
             listings = []
             for i in menu:
                 listings.append(os.path.isdir(i))
-            print_menu(stdscr,listings,0,folder,menu)
+            cur_row = menu.index(folder)+1
+            print_menu(stdscr,listings,cur_row,folder,menu)
             l = len(menu)
             stdscr.addstr(0,0," "*w,curses.color_pair(5))
             stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
@@ -163,9 +165,7 @@ def main(stdscr):
                 os.chdir("..")
                 path = getpass.getuser()+":"+os.getcwd()+"$"
                 menu = os.listdir()
-                for i in range(len(menu)):
-                    menu[i] = menu[i].lower()
-                cur_row = menu.index(old_menu.lower())+1
+                cur_row = menu.index(old_menu)+1
                 l = len(menu)
                 listings = []
                 for i in menu:
