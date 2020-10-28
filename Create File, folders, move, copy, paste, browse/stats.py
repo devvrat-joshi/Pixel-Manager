@@ -17,7 +17,7 @@ def show_stat(stdscr,file,dira):
     try:
         st = os.stat(file)
     except:
-        for i in range(2,7):
+        for i in range(2,10):
             stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
         stdscr.addstr(1,w-wn+wn//2-1,"Stats",curses.color_pair(11))  
         stdscr.addstr(2,w-wn+wn//2-7,"Permission Denied",curses.color_pair(11))
@@ -36,6 +36,9 @@ def show_stat(stdscr,file,dira):
     stdscr.addstr(5,w-wn+1,"Size (KB): "+str(round(st.st_size/kb,3)) ,curses.color_pair(11))
     stdscr.addstr(6,w-wn," "*wn,curses.color_pair(11))
     stdscr.addstr(6,w-wn+1,"Type     : "+dira ,curses.color_pair(11))
+    stdscr.addstr(7,w-wn+1,"User ID  : "+str(st.st_uid) ,curses.color_pair(11))
+    stdscr.addstr(8,w-wn+1,"Group ID : "+str(st.st_gid) ,curses.color_pair(11))
+    stdscr.addstr(9,w-wn+1,"Inode    : "+str(st.st_ino) ,curses.color_pair(11))
 """
 atime ctime mtime size mode type 
 """
