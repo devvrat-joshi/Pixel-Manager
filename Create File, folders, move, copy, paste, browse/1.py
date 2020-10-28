@@ -54,6 +54,7 @@ def main(stdscr):
     wn = 37
     for i in range(1,h-2):
         stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
+    curses.curs_set(0)
     while 1:
         show_stat(stdscr,menu[cur_row-1],listings[cur_row-1])
         enter = 0
@@ -345,5 +346,4 @@ def main(stdscr):
                 stdscr.attron(curses.color_pair(6))
                 stdscr.addstr(0,len("Terminal: "+path)+1,onboard)
         # stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
-    curses.curs_set(0)
 curses.wrapper(main)
