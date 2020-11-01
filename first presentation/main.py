@@ -9,11 +9,12 @@ from create import *
 from stats import *
 os.chdir(".")
 menu = os.listdir()
+menu.sort()
 
 permission = "Permission Denied"
 file = "It is a File"
 copy = "Selected File: "
-options = " c : copy, m : move, k : create file, g : create folder"
+options = " c : copy, m : move, k : create file, g : create folder, v : paste"
 
 def main(stdscr):
     global menu
@@ -55,12 +56,22 @@ def main(stdscr):
     for i in range(1,h-2):
         stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
     curses.curs_set(0)
+    folder = ""
+    folder_to_be_copied = ""
     while 1:
         show_stat(stdscr,menu[cur_row-1],listings[cur_row-1])
         if not terminal:
             stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5) + curses.A_BOLD)
         enter = 0
         key = stdscr.getch()
+        if key==27:
+            stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
+            stdscr.addstr(h-1,2*w//5-1,options+" "*(3*w//5-len(options)+1),curses.color_pair(8))
+            stdscr.addstr(h-1,0,copy,curses.color_pair(7))
+            bb = 0
+            folder = ""
+            folder_to_be_copied = ""
+            continue
         # date = time.ctime()
         if key==ord("k") and not terminal:
             menu,listings,cur_row = getform(stdscr,menu,listings,0)
@@ -104,6 +115,7 @@ def main(stdscr):
             stdscr.addstr(h-1,2*w//5-1,options+" "*(3*w//5-len(options)+1),curses.color_pair(8))
             stdscr.addstr(h-1,0,copy,curses.color_pair(7))
             menu = os.listdir()
+            menu.sort()
             listings = []
             for i in menu:
                 listings.append(os.path.isdir(i))
@@ -114,6 +126,7 @@ def main(stdscr):
             stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
             a = 0
         if key==ord("m") and bb==0 and not terminal:
+            # Move
             k = menu[cur_row-1]
             if len(k)>3*w//5-30:
                 stdscr.addstr(h-1,len(copy),k[:3*w//5-30],curses.color_pair(7))
@@ -128,11 +141,15 @@ def main(stdscr):
             bb = 1
             continue
         if key==118 and bb==1 and not terminal:
-            shutil.move(folder_to_be_copied,os.getcwd()+"/")
+            try:
+                shutil.move(folder_to_be_copied,os.getcwd()+"/")
+            except:
+                pass
             stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(7))
             stdscr.addstr(h-1,2*w//5-1,options+" "*(3*w//5-len(options)+1),curses.color_pair(8))
             stdscr.addstr(h-1,0,copy,curses.color_pair(7))
             menu = os.listdir()
+            menu.sort()
             listings = []
             for i in menu:
                 listings.append(os.path.isdir(i))
@@ -165,6 +182,7 @@ def main(stdscr):
                 os.chdir("..")
                 path = getpass.getuser()+":"+os.getcwd()+"$"
                 menu = os.listdir()
+                menu.sort()
                 cur_row = menu.index(old_menu)+1
                 l = len(menu)
                 listings = []
@@ -285,7 +303,6 @@ def main(stdscr):
             stdscr.addstr(h-2,0," "*(w-1))
             stdscr.addstr(h-2,w//2-len(menu[cur_row-1])//2,menu[cur_row-1])
         elif key==curses.KEY_LEFT:
-            
             old_menu = path.split("/")[-1][:-1]
             if path==getpass.getuser()+":"+"/"+"$":
                 # stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
@@ -293,6 +310,7 @@ def main(stdscr):
             os.chdir("..")
             path = getpass.getuser()+":"+os.getcwd()+"$"
             menu = os.listdir()
+            menu.sort()
             cur_row = menu.index(old_menu)+1
             l = len(menu)
             listings = []
@@ -321,6 +339,7 @@ def main(stdscr):
                 os.chdir(menu[cur_row-1])
                 cur_row=1
                 menu = os.listdir()
+                menu.sort()
                 if len(menu)==0:
                     menu = ["Empty Folder"]
                 path = getpass.getuser()+":"+os.getcwd()+"$"

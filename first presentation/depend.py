@@ -6,6 +6,7 @@ from datetime import datetime
 
 os.chdir(".")
 menu = os.listdir()
+menu.sort()
 
 file = "It is a File"
 copy = "Press c to copy the file: "

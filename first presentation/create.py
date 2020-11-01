@@ -44,6 +44,7 @@ def getform(stdscr,menu,listings,q):
     elif onboard!="" and q:
         os.mkdir(onboard)
     menu = os.listdir()
+    menu.sort()
     stdscr.addstr(h-3,w//5," "*(4*w//5),curses.color_pair(3))
     print_menu(stdscr,listings,0,"",menu)
     stdscr.refresh()
