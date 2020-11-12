@@ -17,3 +17,4 @@
 - [ ] Enter key partially working - TODO when enter in between text
 - [ ] Backspace at start of the line
 - [ ] Consider TAB
+- [ ] Add SFTP functionality
