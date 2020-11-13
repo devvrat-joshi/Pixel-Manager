@@ -14,12 +14,12 @@ copy = "Press c to copy the file: "
 search = "Ctrl + S to search: "
 
 
-def empty_right(stdscr, remove_stats=False):
+def empty_right(stdscr, full_screen_mode=False):
     p, w = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(3))
     for i in range(1, p - 2):
-        if remove_stats:
-            stdscr.addstr(i, w // 5, " " * (w - w // 5))
+        if full_screen_mode:
+            stdscr.addstr(i, 0, " " * (w - w // 5))
             stdscr.refresh()
         else:
             stdscr.addstr(i, w // 5, " " * (4 * w // 5 - 39))
