@@ -4,7 +4,7 @@ import os
 import re
 
 import logging as log
-from depend import empty_right
+from depend import empty_right, print_menu
 
 log.basicConfig(
     filename="logs.txt", filemode="a", level=log.INFO,
@@ -57,7 +57,8 @@ class Editor:
             self.curr_file.close()
             curses.curs_set(0)
             curses.noecho()
-            empty_right(self.stdscr)
+            empty_right(self.stdscr, True)
+            # print_menu(self.stdscr, )  # bas devvrat ko hi pata kaise kaam kar rha yeh function
             return 1
 
     def loop(self):
@@ -88,24 +89,24 @@ class Editor:
             self.column_no = min(
                 self.column_no, len(self.content[self.line_number - 1])
             )
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
         elif key_pressed == curses.KEY_DOWN:
             self.line_number = min(len(self.content), self.line_number + 1)
             self.column_no = min(
                 self.column_no, len(self.content[self.line_number - 1])
             )
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
         elif key_pressed == curses.KEY_LEFT:
             self.column_no = max(1, self.column_no - 1)
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
         elif key_pressed == curses.KEY_RIGHT:
             self.column_no = min(
                 len(self.content[self.line_number - 1]), self.column_no + 1
             )
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
         elif key_pressed == curses.KEY_BACKSPACE or key_pressed == 8:
             if self.column_no == 1:
-                self.stdscr.move(self.line_number, self.swidth // 5 + 1)
+                self.stdscr.move(self.line_number, 1)
                 return 0
             self.column_no -= 1
             self.content[self.line_number - 1] = (
@@ -115,10 +116,10 @@ class Editor:
             # self.stdscr.delch(self.line_number, self.column_no + self.swidth // 5)
             self.stdscr.addstr(
                 self.line_number,
-                self.swidth // 5 + 1,
+                1,
                 self.content[self.line_number - 1],
             )
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
         elif key_pressed == curses.KEY_ENTER or key_pressed == 10:
             self.line_number += 1
             self.content = (
@@ -128,7 +129,7 @@ class Editor:
             )
             self.column_no = 1
             self.print_content()
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
 
         else:
             self.content[self.line_number - 1] = (
@@ -138,11 +139,11 @@ class Editor:
             )
             self.stdscr.addstr(
                 self.line_number,
-                self.swidth // 5 + 1,
+                1,
                 self.content[self.line_number - 1],
             )
             self.column_no += 1
-            self.stdscr.move(self.line_number, self.column_no + self.swidth // 5)
+            self.stdscr.move(self.line_number, self.column_no)
 
         return 0
 
@@ -179,12 +180,12 @@ class Editor:
 
     def print_content(self):
         for lno in range(len(self.content)):
-            x = self.swidth // 5 + 1
+            x = 1
             y = lno + 1
 
             # TODO - wrap text when line size is more than a particular length
             self.stdscr.addstr(y, x, self.content[lno])
-        self.stdscr.move(1, self.swidth // 5 + 1)
+        self.stdscr.move(1, 1)
         self.stdscr.refresh()
         return
 
