@@ -1,10 +1,9 @@
 import curses
 import time
 import os
-import re
 
 import logging as log
-from depend import empty_right, print_menu
+from depend import empty_right
 
 log.basicConfig(
     filename="logs.txt", filemode="a", level=log.INFO,
@@ -14,10 +13,6 @@ log.basicConfig(
 class Editor:
     def __init__(self, stdscr, file_name=None):
         log.info("starting editor")
-        # if file_name is None:
-        #     self.new = 1
-        #     self.file_name = f"temp{time.time()}.txt"
-        # else:
         na, ex = file_name.split(".")
         self.file_name = f"{na}-temp{time.time()}.{ex}"
         self.stdscr = stdscr
@@ -27,7 +22,6 @@ class Editor:
         self.writeable = 1
         os.system(f"cp {file_name} {self.file_name}")
         try:
-            # if not self.new:
             self.curr_file = open(self.file_name, "r+")
         except PermissionError:
             self.curr_file = open(self.file_name, "r")
@@ -38,7 +32,10 @@ class Editor:
             self.file_name = f"temp{time.time()}.txt"
             self.curr_file = open(self.file_name, "r+")
         self.content = self.curr_file.readlines()
+        if len(self.content)==0:
+            self.content.append(" ")
         self.height, self.swidth = self.stdscr.getmaxyx()
+        self.cursor_lno = 1
         empty_right(self.stdscr, True)
         self.show_editor()
 
@@ -58,7 +55,6 @@ class Editor:
             curses.curs_set(0)
             curses.noecho()
             empty_right(self.stdscr, True)
-            # print_menu(self.stdscr, )  # bas devvrat ko hi pata kaise kaam kar rha yeh function
             return 1
 
     def loop(self):
@@ -67,7 +63,7 @@ class Editor:
         while 1:
             key_pressed = self.stdscr.getch()
             if self.mode == "insert":
-                _ = self.insert(key_pressed)
+                self.insert(key_pressed)
             else:
                 quit_editor, save_file = self.command(key_pressed)
             if quit_editor:
@@ -83,31 +79,52 @@ class Editor:
         # TODO
         if key_pressed == 27:
             self.mode = "command"
-            return 0
+            return
+
         elif key_pressed == curses.KEY_UP:
-            self.line_number = max(1, self.line_number - 1)
+            if self.line_number==1:
+                return
+            if self.cursor_lno==1 and self.line_number>1:
+                self.line_number-=1
+                empty_right(self.stdscr, True)
+                self.print_content(self.line_number)
+            else:
+                self.line_number -=1
+                self.cursor_lno-=1
             self.column_no = min(
                 self.column_no, len(self.content[self.line_number - 1])
             )
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
+        
         elif key_pressed == curses.KEY_DOWN:
-            self.line_number = min(len(self.content), self.line_number + 1)
+            if self.line_number == len(self.content):
+                return
+            if self.cursor_lno==self.height-3 and self.line_number>=self.cursor_lno:
+                self.line_number+=1
+                empty_right(self.stdscr, True)
+                self.print_content(self.line_number-(self.height-4))
+            else:
+                self.line_number+=1
+                self.cursor_lno+=1
             self.column_no = min(
                 self.column_no, len(self.content[self.line_number - 1])
             )
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
+        
         elif key_pressed == curses.KEY_LEFT:
             self.column_no = max(1, self.column_no - 1)
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
+        
         elif key_pressed == curses.KEY_RIGHT:
             self.column_no = min(
                 len(self.content[self.line_number - 1]), self.column_no + 1
             )
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
+        
         elif key_pressed == curses.KEY_BACKSPACE or key_pressed == 8:
             if self.column_no == 1:
-                self.stdscr.move(self.line_number, 1)
-                return 0
+                self.stdscr.move(self.cursor_lno, 1)
+                return
             self.column_no -= 1
             self.content[self.line_number - 1] = (
                 self.content[self.line_number - 1][: self.column_no - 1]
@@ -115,11 +132,11 @@ class Editor:
             )
             # self.stdscr.delch(self.line_number, self.column_no + self.swidth // 5)
             self.stdscr.addstr(
-                self.line_number,
-                1,
-                self.content[self.line_number - 1],
+                self.cursor_lno, 1, self.content[self.line_number - 1],
             )
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
+        
+        # TODO - Enter is broken after adding scroll thing
         elif key_pressed == curses.KEY_ENTER or key_pressed == 10:
             self.line_number += 1
             self.content = (
@@ -128,8 +145,9 @@ class Editor:
                 + self.content[self.line_number - 1 :]
             )
             self.column_no = 1
+            
             self.print_content()
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
 
         else:
             self.content[self.line_number - 1] = (
@@ -138,14 +156,12 @@ class Editor:
                 + self.content[self.line_number - 1][self.column_no - 1 :]
             )
             self.stdscr.addstr(
-                self.line_number,
-                1,
-                self.content[self.line_number - 1],
+                self.cursor_lno, 1, self.content[self.line_number - 1],
             )
             self.column_no += 1
-            self.stdscr.move(self.line_number, self.column_no)
+            self.stdscr.move(self.cursor_lno, self.column_no)
 
-        return 0
+        return
 
     def command(self, key_pressed):
         # TODO
@@ -178,49 +194,23 @@ class Editor:
         os.system(f"mv {self.file_name} {fname}")
         return
 
-    def print_content(self):
-        for lno in range(len(self.content)):
+    def print_content(self, start_line=1):
+        for lno in range(
+            start_line - 1,
+            start_line - 1 + min(len(self.content) - start_line + 1, self.height - 3),
+        ):
             x = 1
-            y = lno + 1
+            y = lno + 1 - (start_line-1)
 
             # TODO - wrap text when line size is more than a particular length
-            self.stdscr.addstr(y, x, self.content[lno])
-        self.stdscr.move(1, 1)
+            try:
+                self.stdscr.addstr(y, x, self.content[lno])
+            except Exception as e:
+                log.info(f"error in print-content {e}")
+                continue
+        if start_line==1:
+            self.stdscr.move(1, 1)
         self.stdscr.refresh()
         return
 
 
-"""
-    @staticmethod
-    def create_newfile(stdscr):
-        name_str = "File Name : "
-        h, w = stdscr.getmaxyx()
-        curses.init_pair(10, curses.COLOR_WHITE, 56)
-        stdscr.attron(curses.color_pair(10))
-        stdscr.addstr(h - 3, w // 5, " " * (4 * w // 5), curses.color_pair(10))
-        stdscr.addstr(h - 3, w // 5, name_str, curses.color_pair(10))
-        key = stdscr.getch()
-        k = 0
-        onboard = ""
-        while key != curses.KEY_ENTER and key != 10 and key != 13:
-            if key == 8 or key == 127 or key == curses.KEY_BACKSPACE and k >= 0:
-                if k <= 0:
-                    continue
-                k -= 1
-                onboard = onboard[:-1]
-                stdscr.addstr("\b \b")
-            elif key != 263 and key != 258 and key != 259 and key != 261:
-                k += 1
-                onboard += chr(key)
-                stdscr.move(h - 3, w // 5 + len(name_str) + len(onboard) - 1)
-                stdscr.addch(key)
-            key = stdscr.getch()
-        tmp = onboard.split(".")
-        if len(tmp) == 1:
-            onboard = onboard + ".txt"
-        return onboard
-        # if onboard!="":
-        #     file = open(onboard,"w")
-        #     file.close()
-        #     pass
-"""

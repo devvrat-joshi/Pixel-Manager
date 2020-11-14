@@ -82,6 +82,7 @@ def main(stdscr):
             return 0
         if key == ord("e"):
             _ = Editor(stdscr, menu[cur_row - 1])
+            print_menu(stdscr, listings, cur_row, folder, menu)
         if key == 27:
             stdscr.addstr(h - 1, 0, " " * (w - 1), curses.color_pair(7))
             stdscr.addstr(

@@ -19,7 +19,7 @@ def empty_right(stdscr, full_screen_mode=False):
     stdscr.attron(curses.color_pair(3))
     for i in range(1, p - 2):
         if full_screen_mode:
-            stdscr.addstr(i, 0, " " * (w - w // 5))
+            stdscr.addstr(i, 0, " " * w)
             stdscr.refresh()
         else:
             stdscr.addstr(i, w // 5, " " * (4 * w // 5 - 39))
