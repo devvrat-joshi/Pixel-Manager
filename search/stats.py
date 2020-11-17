@@ -7,8 +7,20 @@ from datetime import datetime
 from depend import *
 from create import *
 import psutil
-
+import multiprocessing
 os.stat(".")
+def update():
+    stdscr = curses.initscr()
+    wn = 37
+    h,w = stdscr.getmaxyx()
+    
+def start(stdscr):
+    # mn = multiprocessing.Manager()
+    # m = mn.
+    # m[0] = stdscr
+    # p1 = multiprocessing.Process(target=update)
+    # p1.start()
+    pass
 
 print(time.ctime((os.stat(".").st_ctime)))
 def show_stat(stdscr,file,dira):
@@ -46,8 +58,20 @@ def show_stat(stdscr,file,dira):
     stdscr.addstr(7,w-wn+1,"User ID  : "+str(st.st_uid) ,curses.color_pair(11))
     stdscr.addstr(8,w-wn+1,"Group ID : "+str(st.st_gid) ,curses.color_pair(11))
     stdscr.addstr(9,w-wn+1,"Inode    : "+str(st.st_ino) ,curses.color_pair(11))
-    stdscr.addstr(10,w-wn+1,"CPU %    : "+str(psutil.cpu_percent()) ,curses.color_pair(11))
-    stdscr.addstr(11,w-wn+1,"RAM %    : "+str(psutil.virtual_memory().percent) ,curses.color_pair(11))
+    bar(stdscr,h,w)
+
+def bar(stdscr,h,w):
+    curses.init_pair(30,curses.COLOR_BLACK,238)
+    curses.init_pair(31,curses.COLOR_BLACK,244)
+    cpu = psutil.cpu_percent()
+    stdscr.addstr(11,(w)-23,"CPU Usage" ,curses.color_pair(11))
+    stdscr.addstr(12,w-36," "*35,curses.color_pair(31))
+    stdscr.addstr(12,w-36," "*int(35*cpu/100),curses.color_pair(30))
+    ram = psutil.virtual_memory().percent
+    stdscr.addstr(14,(w)-23,"RAM Usage" ,curses.color_pair(11))
+    stdscr.addstr(15,w-37+1," "*35,curses.color_pair(31))
+    stdscr.addstr(15,w-36," "*int(35*ram/100),curses.color_pair(30))
+    
 """
 atime ctime mtime size mode type 
 """

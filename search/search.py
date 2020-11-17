@@ -41,6 +41,7 @@ def search_init(stdscr,h,w,path):
     onboard = ""
     while 1:
         key = stdscr.getch()
+        
         i = 0
         if key==1:
             curses.curs_set(0)
@@ -76,5 +77,7 @@ def search_init(stdscr,h,w,path):
                 stdscr.addstr(1,w//5+2,"Not Found: "+onboard)
         stdscr.addstr(0,w-36,"Search Results :       ",curses.color_pair(18))        
         stdscr.addstr(0,w-36,"Search Results : "+str(ifit),curses.color_pair(18))
+        bar(stdscr,h,w)
         stdscr.move(0,w//5+len(se)+len(onboard)+1)
         stdscr.attron(curses.color_pair(19))
+        

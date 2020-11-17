@@ -12,7 +12,7 @@ import multiprocessing
 copy = " Selected File: "
 
 def child(onboard):
-    os.system('{} > /home/{}/output.txt'.format(onboard,getpass.getuser()))
+    os.system('({}) > /home/{}/output.txt 2>&1'.format(onboard,getpass.getuser()))
 
 def terminal_shift_control(stdscr,k,path,h,w,menu,listings,l,cur_row):
     pp = "\U000025B8\U000025B8\U000025B8"
@@ -39,7 +39,7 @@ def terminal_shift_control(stdscr,k,path,h,w,menu,listings,l,cur_row):
     while 1:
         old = os.getcwd()
         key = stdscr.getch()
-        if onboard=="out" and not done:
+        if key==curses.KEY_DOWN and not done:
             done = 1
             curses.curs_set(0)
             file = open('/home/{}/output.txt'.format(getpass.getuser()),"r")
@@ -75,8 +75,7 @@ def terminal_shift_control(stdscr,k,path,h,w,menu,listings,l,cur_row):
                     else:
                         if l==curl+i-h+h//2:
                             curl -= 1
-                
-                if key==ord("e"):
+                if key==27:
                     break
             
             curses.curs_set(1)
@@ -215,10 +214,13 @@ def terminal_shift_control(stdscr,k,path,h,w,menu,listings,l,cur_row):
                 continue
             k-=1
             onboard = onboard[:-1]
+            bar(stdscr,h,w)
+            stdscr.move(h-2,len(pp)+len(onboard)+2)
             stdscr.addstr("\b \b")
         elif key!=263 and key!=258 and key!=259 and key!=261:
             k+=1
             onboard+=chr(key)
             stdscr.attron(curses.color_pair(6))
+            bar(stdscr,h,w)
             stdscr.move(h-2,len(pp)+len(onboard))
             stdscr.addch(key)

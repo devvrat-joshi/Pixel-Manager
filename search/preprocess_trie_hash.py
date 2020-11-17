@@ -1,7 +1,7 @@
-all = []
+from collections import defaultdict
 class Node:
     def __init__(self):
-        self.children = [None]*300
+        self.children = defaultdict(bool)
         self.is_end = False
     
 class Trie:
@@ -12,7 +12,7 @@ class Trie:
         for i in range(len(pattern)):
             ind = ord(pattern[i])
             # print(ind)
-            if temp.children[ind] == None:
+            if temp.children[ind] == False:
                 temp.children[ind] = Node()
             temp = temp.children[ind]
         temp.is_end = True
@@ -20,24 +20,24 @@ class Trie:
         temp = self.head
         for i in range(len(pattern)):
             ind = ord(pattern[i])
-            if temp is None or temp.children[ind] is None:
+            if temp is False or temp.children[ind] is False:
                 return False
             temp = temp.children[ind]
         return temp.is_end
     def prefix_all(self,head,pattern,results):
         temp = head
-        for i in range(300):
-            if temp.children[i]:
-                if temp.children[i].is_end:
-                    results.append(pattern+chr(i))
-                results = self.prefix_all(temp.children[i],pattern+chr(i),results)
+        for ind,i in temp.children.items():
+            if i:
+                if i.is_end:
+                    results.append(pattern+chr(ind))
+                results = self.prefix_all(i,pattern+chr(ind),results)
         return results
     def prefix_search(self,pattern):
         results = []
         temp = self.head
         for i in range(len(pattern)):
             ind = ord(pattern[i])
-            if temp.children[ind] == None:
+            if temp.children[ind] == False:
                 return results
             temp=temp.children[ind]
         if(temp.is_end):

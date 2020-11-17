@@ -56,6 +56,7 @@ def main(stdscr):
     wn = 37
     for i in range(1,h-2):
         stdscr.addstr(i,w-wn," "*wn,curses.color_pair(11))
+    start(stdscr)
     curses.curs_set(0)
     folder = ""
     folder_to_be_copied = ""
