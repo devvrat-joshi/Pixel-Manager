@@ -1,12 +1,17 @@
 #!usr/bin/python3
 import curses,time,os
 import getpass,sys,signal
+import importlib
+try:
+    import psutil
+except ImportError:
+    os.system("python3 -m pip install psutil")
+    import psutil
 import shutil
 from distutils.dir_util import copy_tree
 from datetime import datetime
-from depend import *
-from create import *
-import psutil
+# from depend import *
+# from create import *
 # import multiprocessing
 os.stat(".")
 # def update():
@@ -25,7 +30,7 @@ def start(stdscr):
 # LOCK = multiprocessing.Lock()
 def bar(stdscr):
     # LOCK.acquire()
-    h,w = stdscr.getmaxyx()
+    _,w = stdscr.getmaxyx()
     time.sleep(1)
     # LOCK.release()
     while 1:
@@ -99,6 +104,3 @@ def bar_single(stdscr,h,w):
     stdscr.addstr(15,w-37+1," "*34,curses.color_pair(31))
     stdscr.addstr(15,w-36," "*int(34*ram/100),curses.color_pair(30))
     stdscr.refresh()
-"""
-atime ctime mtime size mode type 
-"""

@@ -1,15 +1,20 @@
 # There are total __ number of files with 2000 lines of code.
 
-import curses,time,os                    # Import some main dependencies
-import getpass,sys,signal                # Used for getting user information and for passing system arguments
-import shutil                            # Tree level copy, move, delete
-from distutils.dir_util import copy_tree 
+import curses  # Import some main dependencies
+import getpass  # Used for getting user information and for passing system arguments
+import os
+import shutil  # Tree level copy, move, delete
+import signal
+import sys
+import time
+from datetime import datetime  # Datetime
+from distutils.dir_util import copy_tree
 from datetime import datetime            # Datetime
-from depend import *                     # Custom created functions and dependencies
-from create import *                     # Custom create file, self.folder 
-from stats import *                      # Custom stats of files
-from terminal_lib import *               # Custom self.terminal
-from search import *                     # Custom recusive search
+import depend                     # Custom created functions and dependencies
+from create import getform                     # Custom create file, self.folder 
+from stats import bar, bar_single, show_stat, start                      # Custom stats of files
+from terminal_lib import terminal_shift_control            # Custom self.terminal
+from search import search_init                     # Custom recusive search
 from powerful_editor import Editor       # Custom Editor
 from deditor import start_editor         #CHECK
 
@@ -27,9 +32,10 @@ search_files_path = os.getcwd()+"/search_files"
 
 
 class FileManager:
+    
     """ 
-        Init Function : Source of the File Manager
-        Takes Input as standard screen : self.stdscr, list of files and folders in current directory
+    Starting of the File Manager
+    Takes Input as standard screen : self.stdscr, list of files and folders in current directory
     """
     def __init__(self,stdscr,menu):
         self.menu = menu
@@ -63,9 +69,9 @@ class FileManager:
         self.onboard = ""
         self.a,self.bb = 0,0
         self.l = len(self.menu)
-        print_menu(self.stdscr,self.listings,0,"",self.menu)
+        depend.print_menu(self.stdscr,self.listings,0,"",self.menu)
         self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5) + curses.A_BOLD)
-        option(self.stdscr,self.h, self.w)
+        depend.option(self.stdscr,self.h, self.w)
         self.stdscr.addstr(self.h-1,0,copy,curses.color_pair(15))
         show_stat(self.stdscr,self.menu[0],self.listings[self.cur_row-1])
         self.wn = 37
@@ -78,79 +84,105 @@ class FileManager:
         self.startManager()
 
     def startManager(self):
+        """
+        Starts File Manager and has all the key bindings.
+        Most of the key bindings is added to the bottom of screen.  
+
+        Also, README.md has all bindings listed 
+        """
         while 1:
             self.init_new_iteration()
             key = self.stdscr.getch()
 
+            # end key to exit the program
             if key==curses.KEY_END:
-                exit()
+                exit(0)
 
+            # Control +A to start searching
             if key==1:
                 self.init_search()
 
             if key==curses.KEY_BTAB: # Open self.terminal
                 self.menu,self.listings,self.l,self.path,self.cur_row = terminal_shift_control(self.stdscr,self.k,self.path,self.h, self.w,self.menu,self.listings,self.l,self.cur_row)
                            
+            # e to open editor
             if key == ord("e"):
                 # editor
                 self.init_editor()
 
+            # d to delete the selected file
             if key==ord("d"):
                 # Delete file
                 self.delete_selection()
 
+            # escape to remove any selected file. (selected for cut/copy/delete)
             if key==27:
                 self.delesect_selection()
                 continue
 
-            if key==ord("k") and not self.terminal: # create self.folder
+            # k to create a new folder
+            if key==ord("k") and not self.terminal:
                 self.menu,self.listings,self.cur_row = getform(self.stdscr,self.menu,self.listings,0)
                 self.l = len(self.menu)
                 continue
 
-            if key==ord("g") and not self.terminal: # create file
+            # g to create new file
+            if key==ord("g") and not self.terminal: 
                 self.menu,self.listings,self.cur_row = getform(self.stdscr,self.menu,self.listings,1)
                 self.l = len(self.menu)
                 continue
 
-            if key==99 and not self.terminal:
+            # select current file/folder for copy
+            if key==ord('c') and not self.terminal:
                 self.copy_selection()
                 continue
 
-            if key==118 and self.a==1 and not self.terminal:
+            if key==ord('v') and self.a==1 and not self.terminal:
                 # copy the file/self.folder in buffer to current directory
-                self.menu,self.listings,self.l,self.cur_row,a = copy_cur(self.stdscr,self.fold,self.folder,self.folder_to_be_copied,self.h, self.w,self.path)
+                self.menu,self.listings,self.l,self.cur_row,_ = depend.copy_cur(self.stdscr,self.fold,self.folder,self.folder_to_be_copied,self.h, self.w,self.path)
 
+            # select current file/folder for moving
             if key==ord("m") and self.bb==0 and not self.terminal:
                 # Move
                 self.move_selection()
                 continue
 
-            if key==118 and self.bb==1 and not self.terminal:
+            # v to paste the selected files
+            if key==ord('v') and self.bb==1 and not self.terminal:
                 self.moved()
             
+            # Down key calling function given terminal is not open
             if key==curses.KEY_DOWN and self.terminal==0:
                 if self.key_down():
                     continue
                 
+            # up key calling function given terminal is not open
             elif key==curses.KEY_UP and self.terminal==0:
                 if self.key_up():
                     continue
-                
+            
+            # left key calling function
             elif key==curses.KEY_LEFT:
                 if self.key_left():
                     continue
 
+            # enter key binding, key=10 and 13 are ascii code for enter only.
+            # Function for right key is same as enter
             elif key==curses.KEY_ENTER or key==10 or key==13 or key==curses.KEY_RIGHT:
                 if self.key_enter():
                     continue
 
+            # 
             if self.terminal==1:
-                self.stdscr.addstr(0,0,"self.terminal: "+self.path+" "*(self.w-len(self.path)-10),curses.color_pair(6))
+                self.stdscr.addstr(0,0,"terminal: "+self.path+" "*(self.w-len(self.path)-10),curses.color_pair(6))
                 self.stdscr.attron(curses.color_pair(6))
-                self.stdscr.addstr(0,len("self.terminal: "+self.path)+1,self.onboard)
+                self.stdscr.addstr(0,len("terminal: "+self.path)+1,self.onboard)
 
     def key_left(self):
+        """
+        Browses to the parent directory
+        """
+
         old_menu = self.path.split("/")[-1][:-1]
         if self.path==getpass.getuser()+":"+"/"+"$":
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
@@ -164,8 +196,8 @@ class FileManager:
         self.listings = []
         for i in self.menu:
             self.listings.append(os.path.isdir(i))
-        print_menu(self.stdscr,self.listings,1,old_menu,self.menu)
-        print_folder(self.stdscr,old_menu)
+        depend.print_menu(self.stdscr,self.listings,1,old_menu,self.menu)
+        depend.print_folder(self.stdscr,old_menu)
         if self.cur_row<=l:
             self.stdscr.attron(curses.color_pair(4))
             self.stdscr.addstr(self.h-2,0," "*(self.w-1))
@@ -179,6 +211,10 @@ class FileManager:
             self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5))
 
     def key_enter(self):
+        """
+        1. browse into the directory if it is a directory
+        2. Checks whether it can be opened in the editor (has particular extensions) and opens if possible
+        """
         try:
             if not os.path.isdir(self.menu[self.cur_row-1]):
                 if self.menu[self.cur_row-1].split(".")[-1] in ["txt","py","cpp","c"]:
@@ -191,39 +227,46 @@ class FileManager:
             self.menu = os.listdir()
             self.menu.sort()
             if len(self.menu)==0:
-                self.menu = ["Empty self.folder"]
+                self.menu = ["Empty folder"]
             self.path = getpass.getuser()+":"+os.getcwd()+"$"
             self.l = len(self.menu)
             self.listings = []
             for i in self.menu:
                 self.listings.append(os.path.isdir(i))
-            print_menu(self.stdscr,self.listings,0,"",self.menu)
+            depend.print_menu(self.stdscr,self.listings,0,"",self.menu)
             if self.terminal==1:
-                self.stdscr.addstr(0,0,"self.terminal: "+self.path+" "*(self.w-len(self.path)-10),curses.color_pair(6))
+                self.stdscr.addstr(0,0,"terminal: "+self.path+" "*(self.w-len(self.path)-10),curses.color_pair(6))
                 self.stdscr.attron(curses.color_pair(6))
-                self.stdscr.addstr(0,len("self.terminal: "+self.path)+1,"")
+                self.stdscr.addstr(0,len("terminal: "+self.path)+1,"")
             else:
                 self.stdscr.addstr(0,0," "*self.w,curses.color_pair(5))
                 self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5))
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
         except:
-            empty_right(self.stdscr)
+            depend.empty_right(self.stdscr)
             self.stdscr.addstr(self.h//2,self.w//2-len(permission)//2,permission,curses.color_pair(3))
             return True
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
     
     def key_down(self):
+        """
+        naviagate in a directory
+        """
+
+        # last item of directory
         if self.cur_row==len(self.menu):
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
             return True
+        
+        # to enable scrolling
         if self.cur_row>=self.l or self.cur_row>self.h-4:
             if self.listings[self.cur_row]:
-                print_folder(self.stdscr,self.menu[self.cur_row])
+                depend.print_folder(self.stdscr,self.menu[self.cur_row])
             else:
-                empty_right(self.stdscr)
+                depend.empty_right(self.stdscr)
                 self.stdscr.addstr(self.h//2,self.w//2-len(file)//2,file,curses.color_pair(3))
             self.cur_row+=1
-            scrolldown(self.stdscr,self.cur_row,self.menu)
+            depend.scrolldown(self.stdscr,self.cur_row,self.menu)
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
             return True
         if len(self.menu[self.cur_row-1])<self.per10screen:
@@ -232,9 +275,9 @@ class FileManager:
             x = self.menu[self.cur_row-1][:self.per10screen]
         self.stdscr.addstr(self.cur_row,1,x,curses.color_pair(2))
         if self.listings[self.cur_row]:
-            print_folder(self.stdscr,self.menu[self.cur_row])
+            depend.print_folder(self.stdscr,self.menu[self.cur_row])
         else:
-            empty_right(self.stdscr)
+            depend.empty_right(self.stdscr)
             self.stdscr.addstr(self.h//2,self.w//2-len(file)//2,file,curses.color_pair(3))
         self.cur_row+=1
         if len(self.menu[self.cur_row-1])<self.per10screen:
@@ -250,19 +293,31 @@ class FileManager:
             self.stdscr.addstr(self.h-2,self.w//2-len(self.menu[self.cur_row-1])//2,self.menu[self.cur_row-1])
 
     def key_up(self):
+        """
+        Navigate up in a directory with scrolling
+        """
+        
+        # reached first item
         if self.cur_row==1:
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
             return True
+
+        # scrolling 
         if self.cur_row>=self.h-2:
             self.cur_row-=1
+
+            # printing insides of folder if it is a folder 
             if self.listings[self.cur_row-1]:
-                print_folder(self.stdscr,self.menu[self.cur_row-1])
+                depend.print_folder(self.stdscr,self.menu[self.cur_row-1])
+            
+            # to print ("this is a file")
             else:
-                empty_right(self.stdscr)
+                depend.empty_right(self.stdscr)
                 self.stdscr.addstr(self.h//2,self.w//2-len(file)//2,file,curses.color_pair(3))
-            scrolldown(self.stdscr,self.cur_row,self.menu)
+            depend.scrolldown(self.stdscr,self.cur_row,self.menu)
             # self.stdscr.addstr(1,w-len(date),date,curses.color_pair(5))
             return True
+
         if len(self.menu[self.cur_row-1])<self.per10screen:
             x = self.menu[self.cur_row-1]+" "*((self.per10screen-len(self.menu[self.cur_row-1])))
         else:
@@ -272,9 +327,9 @@ class FileManager:
         self.stdscr.attroff(curses.color_pair(2))
         self.cur_row-=1
         if self.listings[self.cur_row-1]:
-            print_folder(self.stdscr,self.menu[self.cur_row-1])
+            depend.print_folder(self.stdscr,self.menu[self.cur_row-1])
         else:
-            empty_right(self.stdscr)
+            depend.empty_right(self.stdscr)
             self.stdscr.addstr(self.h//2,self.w//2-len(file)//2,file,curses.color_pair(3))
         if len(self.menu[self.cur_row-1])<self.per10screen:
             x = self.menu[self.cur_row-1]+" "*((self.per10screen-len(self.menu[self.cur_row-1])))
@@ -288,6 +343,9 @@ class FileManager:
         self.stdscr.addstr(self.h-2,self.w//2-len(self.menu[self.cur_row-1])//2,self.menu[self.cur_row-1])
 
     def init_new_iteration(self):
+        """
+        This function updates state of stdscr when starting each iteration
+        """
         show_stat(self.stdscr,self.menu[self.cur_row-1],self.listings[self.cur_row-1])
         for i in range(1,self.h-1):
             self.stdscr.addstr(i,0," ",curses.color_pair(5))
@@ -297,15 +355,22 @@ class FileManager:
             self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5) + curses.A_BOLD)
 
     def init_search(self):
+        """
+        This function is function used to show the search bar to
+        search all files of the current folder (recursive) 
+        """
         truth = search_init(self.stdscr,self.h, self.w,self.path,self.cur_row,search_files_path)
         if truth[0]:
             self.listings,self.cur_row,self.l,self.menu,self.path = truth[1],truth[2],truth[3],truth[4],truth[5]
-        empty_right(self.stdscr)
-        print_folder(self.stdscr,self.menu[self.cur_row-1])
+        depend.empty_right(self.stdscr)
+        depend.print_folder(self.stdscr,self.menu[self.cur_row-1])
 
     def init_editor(self):
+        """
+        Starting out editor. This function restores the state after exiting from the editor
+        """
         Editor(self.stdscr,self.menu[self.cur_row-1])
-        print_menu(self.stdscr, self.listings, self.cur_row-1, self.menu[self.cur_row-1], self.menu)
+        depend.print_menu(self.stdscr, self.listings, self.cur_row-1, self.menu[self.cur_row-1], self.menu)
         for i in range(1,self.h-2):
             self.stdscr.addstr(i,self.w-self.wn," "*self.wn,curses.color_pair(11))
         curses.init_pair(3, 3, 55)
@@ -313,6 +378,9 @@ class FileManager:
         self.stdscr.refresh()
 
     def delete_selection(self):
+        """
+        delete the selected file/folder. Need to press r for confirmation
+        """
         curses.init_pair(1, curses.COLOR_WHITE, 1)
         curses.init_pair(14, curses.COLOR_WHITE, 1)
         curses.init_pair(4,curses.COLOR_WHITE,1)
@@ -329,20 +397,28 @@ class FileManager:
             self.listings = []
             for i in self.menu:
                 self.listings.append(os.path.isdir(i))
-            print_menu(self.stdscr,self.listings,0,"",self.menu)
+            depend.print_menu(self.stdscr,self.listings,0,"",self.menu)
         curses.init_pair(1, curses.COLOR_WHITE, 34)
         curses.init_pair(14, curses.COLOR_WHITE, 34)
         curses.init_pair(4,curses.COLOR_WHITE,34)
         self.stdscr.refresh()
 
     def delesect_selection(self):
-        option(self.stdscr,self.h, self.w)
+        """
+        Discards the selected file
+        """
+
+        depend.option(self.stdscr,self.h, self.w)
         self.stdscr.addstr(self.h-1,0,copy,curses.color_pair(15))
         self.bb = 0
         self.folder = ""
         self.folder_to_be_copied = ""
     
     def move_selection(self):
+        """
+        This function is used to select the file that is to be moved
+        """
+
         k = self.menu[self.cur_row-1]
         if len(k)>3*self.w//5-30:
             self.stdscr.addstr(self.h-1,len(copy),k[:3*self.w//5-30],curses.color_pair(15))
@@ -357,11 +433,14 @@ class FileManager:
         self.bb = 1
 
     def moved(self):
+        """
+        This function is used to paste the moved selected folder
+        """
         try:
             shutil.move(self.folder_to_be_copied,os.getcwd()+"/")
         except:
             pass
-        option(self.stdscr,self.h, self.w)
+        depend.option(self.stdscr,self.h, self.w)
         self.stdscr.addstr(self.h-1,0,copy,curses.color_pair(15))
         self.menu = os.listdir()
         self.menu.sort()
@@ -369,13 +448,19 @@ class FileManager:
         for i in self.menu:
             self.listings.append(os.path.isdir(i))
         self.cur_row = self.menu.index(self.folder)+1
-        print_menu(self.stdscr,self.listings,self.cur_row,self.folder,self.menu)
+        depend.print_menu(self.stdscr,self.listings,self.cur_row,self.folder,self.menu)
         self.l = len(self.menu)
         self.stdscr.addstr(0,0," "*self.w,curses.color_pair(5))
         self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5))
         self.bb = 0
 
     def copy_selection(self):
+        """
+        This function is used to select the file that is to be copied. 
+        
+        The code to paste the copied structure is in depend.py
+        """
+        
         k = self.menu[self.cur_row-1]
         if len(k)>3*self.w//5-30:
             self.stdscr.addstr(self.h-1,len(copy),k[:3*self.w//5-30],curses.color_pair(15))
@@ -391,8 +476,9 @@ class FileManager:
 
 def main(stdscr):
     FileManager(stdscr,menu)
-curses.wrapper(main)
 
+curses.wrapper(main)
+    
 # Previewer
 # if key == ord("p"):
 #                 self.cur_row = start_editor(self.stdscr,self.menu[self.cur_row-1],self.cur_row)
