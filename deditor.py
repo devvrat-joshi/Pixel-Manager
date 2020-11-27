@@ -1,7 +1,6 @@
 import curses
 import getpass,os
-file = open("new.txt","r")
-x = file.readlines()
+
 
 def start_editor(stdscr,filename,cur_row):
     h,w = stdscr.getmaxyx()

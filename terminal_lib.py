@@ -68,9 +68,9 @@ def terminal_shift_control(stdscr,k,path,h,w,menu,listings,l,cur_row):
                     if curl+i-h+h//2<l and curl>=0:
                         x[curl+i-h+h//2]=x[curl+i-h+h//2].replace("\n","")
                         if len(x[i-h+h//2])>w-1-w//5:
-                            stdscr.addstr(i,w//5+2,x[curl+i-h+h//2][:w-w//5-2],curses.color_pair(20))
+                            stdscr.addstr(i,w//5+2,x[curl+i-h+h//2][:w-w//5-3],curses.color_pair(20))
                         else:
-                            stdscr.addstr(i,w//5+2,x[curl+i-h+h//2]+" ",curses.color_pair(20))
+                            stdscr.addstr(i,w//5+2,x[curl+i-h+h//2][:w-w//5-3]+" ",curses.color_pair(20))
                         stdscr.refresh()
                     else:
                         if l==curl+i-h+h//2:
@@ -214,13 +214,13 @@ def terminal_shift_control(stdscr,k,path,h,w,menu,listings,l,cur_row):
                 continue
             k-=1
             onboard = onboard[:-1]
-            bar(stdscr,h,w)
+            bar_single(stdscr,h,w)
             stdscr.move(h-2,len(pp)+len(onboard)+2)
             stdscr.addstr("\b \b")
         elif key!=263 and key!=258 and key!=259 and key!=261:
             k+=1
             onboard+=chr(key)
             stdscr.attron(curses.color_pair(6))
-            bar(stdscr,h,w)
+            bar_single(stdscr,h,w)
             stdscr.move(h-2,len(pp)+len(onboard))
             stdscr.addch(key)
