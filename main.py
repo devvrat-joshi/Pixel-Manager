@@ -71,7 +71,6 @@ class FileManager:
         self.wn = 37
         for i in range(1,self.h-2):
             self.stdscr.addstr(i,self.w-self.wn," "*self.wn,curses.color_pair(11))
-        start(self.stdscr)
         curses.curs_set(0)
         self.folder = ""
         self.folder_to_be_copied = ""
