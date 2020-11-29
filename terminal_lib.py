@@ -7,7 +7,6 @@ from datetime import datetime
 from depend import *
 from create import *
 from stats import *
-from deditor import start_editor
 import multiprocessing
 
 # Some strings
