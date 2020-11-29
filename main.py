@@ -466,16 +466,16 @@ def main(stdscr):
     because of user, or becuase of code, 
     then restore to starting directory
 """
-
-while 1:
-    try:
-        curses.wrapper(main)
-    except:
-        if not let_me_exit:
-            os.chdir(search_files_path[:-13])
-        else:
-            exit()
-        pass
+curses.wrapper(main)
+# while 1:
+#     try:
+#         curses.wrapper(main)
+#     except:
+#         if not let_me_exit:
+#             os.chdir(search_files_path[:-13])
+#         else:
+#             exit()
+#         pass
 
 
 
