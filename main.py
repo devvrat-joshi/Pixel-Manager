@@ -12,7 +12,6 @@ from stats import *                      # Custom stats of files
 from terminal_lib import Terminal        # Custom self.terminal
 from search import Search                # Custom recusive search
 from powerful_editor import Editor       # Custom Editor
-from deditor import start_editor         #CHECK
 # Get Current Directory Details
 os.chdir(".")
 menu = os.listdir()
