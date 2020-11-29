@@ -53,26 +53,6 @@ def terminal_call(stdscr,k,path,h,w,terminal,onboard):
         terminal = 0
     return onboard,terminal,k
 
-def option(stdscr,h,w):
-    x = w-76-2*w//5
-    curses.init_pair(70,curses.COLOR_WHITE,23)
-    stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(15))
-    stdscr.addstr(h-1,2*w//5," "*(3*w//5),curses.color_pair(15))
-    stdscr.addstr(h-1,2*w//5+x," c ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+3,"Copy",curses.color_pair(5))
-    stdscr.addstr(h-1,2*w//5+x+7," m ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+10,"Move",curses.color_pair(5))
-    stdscr.addstr(h-1,2*w//5+x+14," k ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+17,"File",curses.color_pair(5))
-    stdscr.addstr(h-1,2*w//5+x+21," g ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+24,"Folder",curses.color_pair(5))
-    stdscr.addstr(h-1,2*w//5+x+30," d+r ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+35,"Delete",curses.color_pair(5))
-    stdscr.addstr(h-1,2*w//5+x+41," ctrl+a ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+49,"Search",curses.color_pair(5))
-    stdscr.addstr(h-1,2*w//5+x+55," shift+tab ",curses.color_pair(70))
-    stdscr.addstr(h-1,2*w//5+x+66,"Terminal",curses.color_pair(5))
-
 def empty_right(stdscr, full_screen_mode=False):
     p, w = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(3))
@@ -83,13 +63,6 @@ def empty_right(stdscr, full_screen_mode=False):
         else:
             stdscr.addstr(i, w // 5+1, " " * (4 * w // 5 - 37))
             stdscr.refresh()
-
-# def empty_right(stdscr):
-#     p,w = stdscr.getmaxyx()
-#     stdscr.attron(curses.color_pair(3))
-#     for i in range(1,p-2):
-#         stdscr.addstr(i,w//5+1," "*(4*w//5-39))
-#         stdscr.refresh()
 
 def print_folder(stdscr,row):
     try:
@@ -186,3 +159,25 @@ def scrolldown(stdscr,cur_row,menu):
             y = idx+1-cur_row+h-3
             stdscr.addstr(y,x,i)
     stdscr.refresh()
+
+
+# relative to bottom left, print options
+def option(stdscr,h,w):
+    x = w-76-2*w//5
+    curses.init_pair(70,curses.COLOR_WHITE,23)
+    stdscr.addstr(h-1,0," "*(w-1),curses.color_pair(15))
+    stdscr.addstr(h-1,2*w//5," "*(3*w//5),curses.color_pair(15))
+    stdscr.addstr(h-1,2*w//5+x," c ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+3,"Copy",curses.color_pair(5))
+    stdscr.addstr(h-1,2*w//5+x+7," m ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+10,"Move",curses.color_pair(5))
+    stdscr.addstr(h-1,2*w//5+x+14," k ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+17,"File",curses.color_pair(5))
+    stdscr.addstr(h-1,2*w//5+x+21," g ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+24,"Folder",curses.color_pair(5))
+    stdscr.addstr(h-1,2*w//5+x+30," d+r ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+35,"Delete",curses.color_pair(5))
+    stdscr.addstr(h-1,2*w//5+x+41," ctrl+a ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+49,"Search",curses.color_pair(5))
+    stdscr.addstr(h-1,2*w//5+x+55," shift+tab ",curses.color_pair(70))
+    stdscr.addstr(h-1,2*w//5+x+66,"Terminal",curses.color_pair(5))

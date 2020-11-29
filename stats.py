@@ -1,53 +1,13 @@
 #!usr/bin/python3
 import curses,time,os
 import getpass,sys,signal
-import importlib
-try:
-    import psutil
-except ImportError:
-    os.system("python3 -m pip install psutil")
-    import psutil
 import shutil
 from distutils.dir_util import copy_tree
 from datetime import datetime
-# from depend import *
-# from create import *
-# import multiprocessing
-os.stat(".")
-# def update():
-#     stdscr = curses.initscr()
-#     wn = 37
-#     h,w = stdscr.getmaxyx()
-    
-def start(stdscr):
-    # mn = multiprocessing.Manager()
-    # m = mn.
-    # m[0] = stdscr
-    # p1 = multiprocessing.Process(target=update)
-    # p1.start()
-    pass
-# multi = 0
-# LOCK = multiprocessing.Lock()
-def bar(stdscr):
-    # LOCK.acquire()
-    _,w = stdscr.getmaxyx()
-    time.sleep(1)
-    # LOCK.release()
-    while 1:
-        # LOCK.acquire()
-        curses.init_pair(30,curses.COLOR_BLACK,238)
-        curses.init_pair(31,curses.COLOR_BLACK,244)
-        cpu = psutil.cpu_percent()
-        stdscr.addstr(11,(w)-23,"CPU Usage" ,curses.color_pair(11))
-        stdscr.addstr(12,w-36," "*34,curses.color_pair(31))
-        stdscr.addstr(12,w-36," "*int(34*cpu/100),curses.color_pair(30))
-        ram = psutil.virtual_memory().percent
-        stdscr.addstr(14,(w)-23,"RAM Usage" ,curses.color_pair(11))
-        stdscr.addstr(15,w-37+1," "*34,curses.color_pair(31))
-        stdscr.addstr(15,w-36," "*int(34*ram/100),curses.color_pair(30))
-        stdscr.refresh()
-        # LOCK.release()
-        time.sleep(0.5)
+from depend import *
+from create import *
+import psutil
+
 def show_stat(stdscr,file,dira):
     h,w = stdscr.getmaxyx()
     wn = 37
@@ -83,11 +43,6 @@ def show_stat(stdscr,file,dira):
     stdscr.addstr(7,w-wn+1,"User ID  : "+str(st.st_uid) ,curses.color_pair(11))
     stdscr.addstr(8,w-wn+1,"Group ID : "+str(st.st_gid) ,curses.color_pair(11))
     stdscr.addstr(9,w-wn+1,"Inode    : "+str(st.st_ino) ,curses.color_pair(11))
-    # global multi
-    # if multi!=1:
-    #     p1 = multiprocessing.Process(target=bar,args=(stdscr,))
-    #     p1.start()
-    #     multi = 1
     bar_single(stdscr,h,w)
 
 
@@ -104,3 +59,6 @@ def bar_single(stdscr,h,w):
     stdscr.addstr(15,w-37+1," "*34,curses.color_pair(31))
     stdscr.addstr(15,w-36," "*int(34*ram/100),curses.color_pair(30))
     stdscr.refresh()
+"""
+    atime ctime mtime size mode type 
+"""

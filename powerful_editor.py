@@ -1,13 +1,10 @@
 import curses
-import time
-import os,re
+import time, filecmp
+import os, re, multiprocessing
 import logging as log
 from depend import empty_right
 from depend import option
 from depend import copy
-log.basicConfig(
-    filename="logs.txt", filemode="a", level=log.INFO,
-)
 
 # scroll : when reaching bottom increase
 # lines : exact location of typing
@@ -16,20 +13,36 @@ log.basicConfig(
 class Editor:
     def __init__(self, stdscr, file_name=None):
         # log.info("starting editor")
+        if file_name.split(".")[-1] == "py":
+            self.key_col = 'import |from |for |while |range|if |else |elif |return '
+            self.bluish = " in | and | or | not |def |class "
+            self.strings = '"(.*?)"'
+            self.comments = '"""().*?"""|#.*'
+            self.extra = "self"
+        else:
+            self.strings = ""
+            self.bluish = ""
+            self.comments = ""
+            self.key_col = ""
+            self.extra = ""
         self.h,self.w = stdscr.getmaxyx()
         self.path = file_name
         self.stdscr = stdscr
         self.stdscr.addstr(0,0," "*self.w,curses.color_pair(5) + curses.A_BOLD)
-        self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5) + curses.A_BOLD)
+        self.stdscr.addstr(0,self.w//2-len("\U0001F40D"+self.path)//2,self.path,curses.color_pair(5) + curses.A_BOLD)
         curses.init_pair(3,curses.COLOR_WHITE,16)
         curses.init_pair(2, curses.COLOR_WHITE, 24)
         curses.init_pair(40,curses.COLOR_RED,16)
         curses.init_pair(60,curses.COLOR_YELLOW,24)
+        curses.init_pair(210,26,16)
+        curses.init_pair(211,11,16)
+        curses.init_pair(212,14,16)
+        curses.init_pair(213,58,16)
         self.global_pattern = ""
         self.clear_screen()
         self.stdscr.refresh()
         self.file = open(file_name,"r")
-        self.temp_file = open(file_name+str(time.time())+".tmp","w")
+        self.temp_file = file_name+str(time.time())+".tmp"
         self.start()
         return 
 
@@ -44,28 +57,59 @@ class Editor:
         # [(m.start(0), m.end(0)) for m in re.finditer(self.global_pattern,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
         for i in range(1,self.h-1):
             if self.scroll_row<max(self.number_of_lines,self.h-2):
+                regex = ""
                 rrr = ""
+                if i>self.number_of_lines and self.number_of_lines<10:
+                    break
                 self.stdscr.addstr(i,0," "+str(self.scroll_row+i)+"."+" "*(self.lenth_of_num-len(str(self.scroll_row+i))),curses.color_pair(5))
                 if range_ and range_[0]<=self.scroll_row+i and range_[1]>self.scroll_row+i:
+                    # log.info(self.key_col)
                     self.stdscr.addstr(i,0," "+str(self.scroll_row+i)+"."+" "*(self.lenth_of_num-len(str(self.scroll_row+i))),curses.color_pair(60))
-
+                if i<self.number_of_lines+1:
+                    self.stdscr.addstr(i,self.lenth_of_num+3,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3],curses.color_pair(3))
+                    if self.key_col:
+                        regex = [(m.start(0), m.end(0)) for m in re.finditer(self.key_col,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
+                        strings = [(m.start(0), m.end(0)) for m in re.finditer(self.strings,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
+                        blue = [(m.start(0), m.end(0)) for m in re.finditer(self.bluish,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
+                        comments = [(m.start(0), m.end(0)) for m in re.finditer(self.comments,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
+                        extra = [(m.start(0), m.end(0)) for m in re.finditer(self.extra,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
+                        for j in regex:
+                            for k in range(j[0],j[1]):
+                                self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(40))
+                        for j in strings:
+                            for k in range(j[0],j[1]):
+                                self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(210))
+                        for j in blue:
+                            for k in range(j[0],j[1]):
+                                self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(211))
+                        for j in extra:
+                            for k in range(j[0],j[1]):
+                                self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(213))
+                        for j in comments:
+                            for k in range(j[0],j[1]):
+                                self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(212))
+                    # log.info(rrr)
+                
+                regdone = 0
                 if i<self.number_of_lines+1:
                     if self.global_pattern:
-                        rrr = [(m.start(0), m.end(0)) for m in re.finditer(re.escape(self.global_pattern),self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
-                    self.stdscr.addstr(i,self.lenth_of_num+3,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3],curses.color_pair(3))
-                    log.info(rrr)
+                        if self.global_pattern.find("re/")!=-1:
+                            if self.global_pattern[:3]=="re/":
+                                rrr = [(m.start(0), m.end(0)) for m in re.finditer(self.global_pattern[3:],self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]        
+                                regdone = 1
+                        if not regdone:
+                            rrr = [(m.start(0), m.end(0)) for m in re.finditer(re.escape(self.global_pattern),self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
+                    # log.info(rrr)
                     for j in rrr:
                         for k in range(j[0],j[1]):
                             self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(44))
 
-
-    def tmp_saver(self):
-        
-
-    def background_saver(self):
-        self.pid = os.fork()
-        if pid==0:
-            
+    @staticmethod
+    def tmp_saver(lines,temp_file,num_of_lines):
+        file = open(temp_file,"w")
+        for i in range(num_of_lines):
+            file.write(lines[i]+"\n")
+        file.close()
 
     def move_cursor(self):
         self.stdscr.move(self.cursor_row,self.cursor_col)
@@ -185,13 +229,15 @@ class Editor:
             self.stdscr.addstr(self.h-1,x+3,"Cut",curses.color_pair(13))
             self.stdscr.addstr(self.h-1,x+6," c ",curses.color_pair(15))
             self.stdscr.addstr(self.h-1,x+9,"Copy",curses.color_pair(13))
+        if self.comments:
+            self.stdscr.addstr(self.h-1,0," \U0001F40D Python",curses.color_pair(5))
 
     def cur_copy_paste(self):
         curses.init_pair(44,curses.COLOR_WHITE,51)
         store_row = self.lines_row
         store_col = self.lines_col
-        self.stdscr.addstr(0,self.w-self.w//6," "*(self.w//6-1),curses.color_pair(5))
-        self.stdscr.addstr(0,self.w-self.w//6,"Select Start Pos : {}, {}".format(store_row+1,store_col+1),curses.color_pair(5))
+        self.stdscr.addstr(0,self.w-26," "*(25),curses.color_pair(5))
+        self.stdscr.addstr(0,self.w-26,"Select Start Pos : {}, {}".format(store_row+1,store_col+1),curses.color_pair(5))
         self.selector_col = store_col
         self.selector_row = store_row
         self.buffer = []
@@ -202,8 +248,8 @@ class Editor:
             if not no_range:
                 range_ = [store_row+1,self.lines_row+2]
             self.print_screen(44,range_)
-            self.stdscr.addstr(self.h-1,self.w-self.w//6," "*(self.w//6-1),curses.color_pair(5))
-            self.stdscr.addstr(self.h-1,self.w-self.w//6,"Select End Pos : {}, {}".format(self.lines_row+1,self.lines_col+1),curses.color_pair(5))
+            self.stdscr.addstr(self.h-1,self.w-26," "*(25),curses.color_pair(5))
+            self.stdscr.addstr(self.h-1,self.w-26,"Select End Pos : {}, {}".format(self.lines_row+1,self.lines_col+1),curses.color_pair(5))
             self.move_cursor()
             self.stdscr.refresh()
             key = self.stdscr.getch()
@@ -223,8 +269,8 @@ class Editor:
                 
             elif key==27:
                 self.buffer = []
-                self.stdscr.addstr(0,self.w-self.w//5," "*(self.w//5-1),curses.color_pair(5))
-                self.stdscr.addstr(self.h-1,self.w-self.w//6," "*(self.w//6-1),curses.color_pair(5))
+                self.stdscr.addstr(0,self.w-30," "*(29),curses.color_pair(5))
+                self.stdscr.addstr(self.h-1,self.w-26," "*(25),curses.color_pair(5))
                 self.print_position()
                 return
 
@@ -243,10 +289,10 @@ class Editor:
                     self.buffer.append(self.lines[self.lines_row][:self.lines_col])
                 elif self.lines_col!=store_col:
                     self.buffer = [self.lines[store_row][store_col:]]
-                log.info(self.buffer)
-                self.stdscr.addstr(0,self.w-self.w//5," "*(self.w//5-1),curses.color_pair(5))
+                # log.info(self.buffer)
+                self.stdscr.addstr(0,self.w-30," "*(self.w//5-1),curses.color_pair(5))
                 self.print_position()
-                self.stdscr.addstr(0,self.w-self.w//5,"Press v to paste at a position",curses.color_pair(5))
+                self.stdscr.addstr(0,self.w-30,"Press v to paste at a position",curses.color_pair(5))
             elif key==ord("x"):
                 no_range = True
                 self.buffer = []
@@ -271,13 +317,13 @@ class Editor:
                     self.cursor_col = min(self.w,self.left_bound + store_col)
                 if self.scroll_row>0:
                     self.scroll_row = max(self.scroll_row-(store_lines-self.number_of_lines),0)
-                log.info(self.buffer)
-                self.stdscr.addstr(0,self.w-self.w//5," "*(self.w//5-1),curses.color_pair(5))
+                # log.info(self.buffer)
+                self.stdscr.addstr(0,self.w-30," "*(29),curses.color_pair(5))
                 self.print_position
-                self.stdscr.addstr(0,self.w-self.w//5,"Press v to paste at a position",curses.color_pair(5))
+                self.stdscr.addstr(0,self.w-30,"Press v to paste at a position",curses.color_pair(5))
                 self.lines_row = store_row
                 self.lines_col = 0
-                self.cursor_row = store_row+1
+                self.cursor_row = store_row-self.scroll_row+1
                 self.cursor_col = self.left_bound
                 if len(self.lines)==0:
                     self.lines = [""]
@@ -369,6 +415,22 @@ class Editor:
             self.cursor_col = self.left_bound
             self.lines_col = 0
             self.scroll_col = 0
+            if self.comments:
+                p = 0
+                line = self.lines[self.lines_row-1]
+                lengt = len(self.lines[self.lines_row-1])
+                while lengt>p+1:
+                    if self.lines[self.lines_row-1][p]==" ":
+                        p+=1
+                    else:
+                        break
+                if self.lines_row>0 and len(self.lines[self.lines_row-1]) and self.lines[self.lines_row-1][-1]==":":
+                    for k in range(p+4):
+                        self.key_print(ord(" "))
+                else:
+                    for k in range(p):
+                        self.key_print(ord(" "))
+                        
 
     def key_back(self):
         if self.lines_col==0:
@@ -447,12 +509,30 @@ class Editor:
                 self.print_position()
                 while 1:
                     key = self.stdscr.getch()
+                    if key==ord("w"):
+                        Editor.tmp_saver(self.lines,self.path,self.number_of_lines)
+
                     if key==ord("q"):
+                        try:
+                            if not filecmp.cmp(self.path,self.temp_file):
+                                self.stdscr.addstr(0,2,"Press d to discard and exit")
+                                key = self.stdscr.getch()
+                                if key==ord("d"):
+                                    pass
+                                else:
+                                    self.stdscr.addstr(0,2," "*27,curses.color_pair(5))
+                                    continue
+                        except:
+                            pass
+                        try:
+                            os.remove(self.temp_file)
+                        except:
+                            pass
                         option(self.stdscr,self.h,self.w)
                         self.stdscr.refresh()
                         self.stdscr.addstr(self.h-1,0,copy,curses.color_pair(15))
                         curses.curs_set(0)
-                        return 
+                        return
                     elif key==ord("s"):
                         self.options("v")
                         self.move_cursor()
@@ -485,13 +565,27 @@ class Editor:
             elif key==curses.KEY_ENTER or key==10 or key==13:
                 self.key_enter()
 
-
             elif key==curses.KEY_BACKSPACE:
                 self.key_back()
 
+            elif key==9:
+                for oo in range(4):
+                    self.key_print(ord(" "))
+            elif key==ord('"') and self.comments:
+                self.key_print(key)
+                self.key_print(key)
+                self.key_left()
+            elif key==ord("(") and self.comments:
+                self.key_print(key)
+                self.key_print(ord(")"))
+                self.key_left()
+            elif key==ord("[") and self.comments:
+                self.key_print(key)
+                self.key_print(ord("]"))
+                self.key_left()
             else:
                 self.key_print(key)
-
+            multiprocessing.Process(target=Editor.tmp_saver,args=(self.lines,self.temp_file,self.number_of_lines,)).start()
 
 
 # else:

@@ -1,14 +1,19 @@
 from collections import defaultdict
 paths = set()
+# Trie Node
 class Node:
     def __init__(self):
         self.children = defaultdict(bool)
         self.is_end = False
         self.path = []
     
+# Trie 
 class Trie:
+    # Init trie
     def __init__(self):
         self.head = Node()
+
+    # Insert into trie
     def insert(self,pattern,path):
         temp = self.head
         for i in range(len(pattern)):
@@ -18,7 +23,9 @@ class Trie:
                 temp.children[ind] = Node()
             temp = temp.children[ind]
         temp.is_end = True
-        temp.path +=path
+        temp.path+=[path]
+
+    # search in trie
     def search(self,pattern):
         temp = self.head
         for i in range(len(pattern)):
@@ -27,6 +34,8 @@ class Trie:
                 return False
             temp = temp.children[ind]
         return temp.is_end,temp.path
+    
+    # find all prefixes
     def prefix_all(self,head,pattern,results):
         temp = head
         for ind,i in temp.children.items():
@@ -35,6 +44,7 @@ class Trie:
                     results.append((pattern+chr(ind),i.path))
                 results = self.prefix_all(i,pattern+chr(ind),results)
         return results
+        
     def prefix_search(self,pattern):
         results = []
         temp = self.head
@@ -49,6 +59,7 @@ class Trie:
         results = self.prefix_all(temp,pattern,results)
         return results
     
+    # preprocess trie
     def preprocess(self,path):
         global paths
         global file
@@ -64,7 +75,7 @@ class Trie:
 
                     if path[k+1:]==i:
                         continue
-                    self.insert(i,[path])
+                    self.insert(i,path)
                     if os.path.isdir(path+"/"+i):
                         old = path
                         path+="/"+i
@@ -73,33 +84,8 @@ class Trie:
         except:
             pass
 file = open('mypaths.txt',"w")
-# def pre(path,depth):
-#     global file
-#     try:
-#         # print(path)
-#         file.write("-"*depth+path+":")
-#         for i in os.listdir(path):
-#             file.write("-"*(depth)+"|"+i+"\n")
-            
-#             if os.path.isdir(path+"/"+i):
-#                 old = path
-#                 path+="/"+i
-#                 pre(path,depth+1)
-#                 path = old
-#     except:
-#         pass
-# import os
-# pre("/mnt/c/Studies/SEM-5",0)
-#import os
-#trie = Trie()
-#trie.preprocess("/mnt/c/Studies")
-#while 1:
-    # print(trie.search(input()))
- #   x = trie.prefix_search(input())
-  #  res = 0
-   # for i in x:
-    #    res+=len(i[1])
-    #print(res)
+
+# below is a preloader implemented
 import os,time
 import curses
 def prog(stdscr,h,w,kk):

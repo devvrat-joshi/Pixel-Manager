@@ -6,9 +6,17 @@ from distutils.dir_util import copy_tree
 from datetime import datetime
 from depend import *
 
+# Define some strings
 name = "File Name : "
 fname = "Folder Name : "
 
+"""
+    Function : Get From
+    Input : stdscr, menu, listings, q
+    stdscr : standard screen
+    menu : files in current path
+    q : if q is False then this function makes file and q is True then Folder
+"""
 def getform(stdscr,menu,listings,q):
     h,w = stdscr.getmaxyx()
     curses.init_pair(10,curses.COLOR_WHITE,18)
