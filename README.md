@@ -2,8 +2,6 @@
 ---
 Welcome to the **Pixel Manager**, a lightweight console based file manager for **Linux systems!** This has been developed as a part of the CS 301 Operating Systems Course, IIT Gandhinagar by [Arpita Kabra](https://github.com/arpitakabra), [Devvrat Joshi](https://github.com/devvrat-joshi), [Viraj Shah](https://github.com/viraj-shah18) and [Vrutik Shah](https://github.com/VrutikShah).
 
-#### Please Note, some files which are left to comment will be added with comments by 30/11/2020 12:00PM. Also directory structure will be added to readme.
-
 ## Table of contents
 1. [Installation](#install)
 2. [Features](#features)
