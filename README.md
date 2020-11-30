@@ -56,7 +56,7 @@ Pixel Manager
 ├─ preprocess_trie_hash.py     -- Trie generation
 ├─ powerful_editor.py          -- editor
 ├─ search_files                -- stores trie
-├─ makefile                    -- makefile
+└─ makefile                    -- makefile
 ```
 
 
