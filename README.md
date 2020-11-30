@@ -131,7 +131,7 @@ Here is how searching looks:
 
 ![](https://i.imgur.com/cX3IztT.png)
 
-It can search for thousands of files giving results instantly. Scroll and navigate through the found items. The **search_files** folder must be present in the Pixel File Manager Directory to store the pickle files created after intiating search. 
+It can search for thousands of files giving results instantly. Scroll and navigate through the found items. 
 
 
 <div><center>Scrolling through results</center></div>
