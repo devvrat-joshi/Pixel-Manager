@@ -6,13 +6,19 @@ from depend import empty_right
 from depend import option
 from depend import copy
 
+"""
+    Powerful editor, too many constraints to handle in sync with main screen.
+    More comments will be added soon
+"""
+
 # scroll : when reaching bottom increase
 # lines : exact location of typing
 # cursor : cursor
 
 class Editor:
     def __init__(self, stdscr, file_name=None):
-        # log.info("starting editor")
+        
+        # if python, then define some regex patterns
         if file_name.split(".")[-1] == "py":
             self.key_col = 'import |from |for |while |range|if |else |elif |return '
             self.bluish = " in | and | or | not |def |class "
@@ -25,6 +31,8 @@ class Editor:
             self.comments = ""
             self.key_col = ""
             self.extra = ""
+
+        
         self.h,self.w = stdscr.getmaxyx()
         self.path = file_name
         self.stdscr = stdscr
@@ -88,8 +96,7 @@ class Editor:
                         for j in comments:
                             for k in range(j[0],j[1]):
                                 self.stdscr.addstr(i,self.left_bound+k,self.lines[self.scroll_row+i-1][self.scroll_col+k],curses.color_pair(212))
-                    # log.info(rrr)
-                
+
                 regdone = 0
                 if i<self.number_of_lines+1:
                     if self.global_pattern:

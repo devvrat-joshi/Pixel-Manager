@@ -1,7 +1,8 @@
 #!/usr/bin/python3.8
-import curses,time,os
-import getpass,sys,signal
-import shutil
+# import dependencies
+import curses,time,os                       # OS , curses, time     
+import getpass,sys,signal                   # user info
+import shutil                               
 from distutils.dir_util import copy_tree
 from datetime import datetime
 from depend import *
@@ -17,7 +18,9 @@ def child(onboard):
     os.system('({}) > /home/{}/output.txt 2>&1'.format(onboard,getpass.getuser()))
 
 class Terminal:
-
+    """
+        Terminal class adds terminal to screen with control to terminal and its output
+    """
     def __init__(self,stdscr,k,path,h,w,menu,listings,l,cur_row):
         # Making Room For Terminal
         self.path = path
@@ -44,12 +47,15 @@ class Terminal:
             self.stdscr.addstr(i,self.w//5+1,(w-self.w//5-1)*" ",curses.color_pair(20))
         self.stdscr.attron(curses.color_pair(6))
         self.stdscr.addstr(self.h-self.h//2-1,self.w//5+1," "*(w-self.w//5-1),curses.color_pair(21))
-        self.tring = "Terminal Output ({} Lines)".format(self.h//2-2)
+        self.tring = "(esc) Terminal Output ({} Lines)".format(self.h//2-2)
         self.stdscr.addstr(self.h-self.h//2-1,(w+self.w//5+1)//2-len(self.tring)//2-1,self.tring,curses.color_pair(21))
         self.onboard = ""
         self.stdscr.move(self.h-2,len(self.pp)+len(self.onboard)+1)
 
     def start(self):
+        """
+            start terminal
+        """
         self.o = 0
         self.cdied = 0
         self.done = 0
@@ -58,25 +64,31 @@ class Terminal:
             self.old = os.getcwd()
             key = self.stdscr.getch()
 
+            # if down key and no previous commands
             if key==curses.KEY_DOWN and not self.done:
                 self.key_down_and_not_done()
                 self.done = 0
                 continue
 
+            # if up key
             if key==curses.KEY_UP:
                 if self.key_up():
                     continue
 
+            # if down key
             elif key==curses.KEY_DOWN:
                 if self.key_down():
                     continue
             
+            # if back tab then exit
             elif key==curses.KEY_BTAB:
                 return self.exit_to_main()
 
+            # enter command, then run the command
             elif key==curses.KEY_ENTER or key==10 or key==13:
                 if self.key_enter():
                     continue
+            # print user input on screen
             elif key == 8 or key == 127 or key == curses.KEY_BACKSPACE and k>=0:
                 if k<0:
                     continue
@@ -95,6 +107,9 @@ class Terminal:
                 self.stdscr.addch(key)
                 
     def key_down_and_not_done(self):
+        """
+            if down key is pressed and no command had run previously, somewhat complex code
+        """
         self.done = 1
         curses.curs_set(0)
         file = open('/home/{}/output.txt'.format(getpass.getuser()),"r")
@@ -144,6 +159,9 @@ class Terminal:
         self.stdscr.addstr(self.h-2,len(self.pp)+1," ",curses.color_pair(6))
     
     def key_up(self):
+        """
+            up key
+        """
         if self.store_commands:
             if self.o>0:
                 self.o -= 1
@@ -158,6 +176,9 @@ class Terminal:
             return True
 
     def key_down(self):
+        """
+            if a previous command is executed, then scroll through the terminal output
+        """
         if self.store_commands:
             if self.o<len(self.store_commands)-1:
                 self.o += 1
@@ -175,6 +196,9 @@ class Terminal:
         return True
     
     def exit_to_main(self):
+        """
+            exit to main class
+        """
         self.o = len(self.store_commands)
         self.onboard = ""
         self.stdscr.addstr(self.h-2,0," "*(self.w-1),curses.color_pair(4))
@@ -189,6 +213,9 @@ class Terminal:
         return self.menu,self.listings,self.l,self.path,self.cur_row
     
     def key_enter(self):
+        """
+            press enter to execute command, complex code and cd command handled in different fasion
+        """
         self.stdscr.addstr(self.h-2,0,self.pp+" "*(self.w-len(self.pp)-1),curses.color_pair(6))
         curses.init_pair(21,curses.COLOR_WHITE,202)
         self.stdscr.refresh()
@@ -207,8 +234,6 @@ class Terminal:
             except:
                 pass
         else:
-            # p = multiprocessing.Process(target=child, args=[self.onboard])
-            # p.start()
             child(self.onboard)
             file = open('/home/{}/output.txt'.format(getpass.getuser()),"r")
             x =  file.readlines()
@@ -223,7 +248,7 @@ class Terminal:
                     else:
                         self.stdscr.addstr(i,self.w//5+2,x[i-self.h+self.h//2]+" ",curses.color_pair(20))
             self.stdscr.addstr(self.h-self.h//2-1,self.w//5+1," "*(self.w-self.w//5-1),curses.color_pair(21))
-            self.tring = "Terminal Output ({} Lines) : {}".format(self.h//2-2,command)
+            self.tring = "(esc) Terminal Output ({} Lines) : {}".format(self.h//2-2,command)
             self.stdscr.addstr(self.h-self.h//2-1,(self.w+self.w//5+1)//2-len(self.tring)//2-1,self.tring,curses.color_pair(21))
             self.stdscr.addstr(self.h-2,0,self.pp+" "*(self.w-len(self.pp)-1),curses.color_pair(6))
             self.stdscr.addstr(self.h-2,len(self.pp)+1," ",curses.color_pair(6))
@@ -251,7 +276,7 @@ class Terminal:
             self.stdscr.addstr(0,self.w//2-len(self.path)//2,self.path,curses.color_pair(5) + curses.A_BOLD)
             for i in range(self.h-self.h//2,self.h-2):
                 self.stdscr.addstr(i,self.w//5+1,(self.w-self.w//5-1)*" ",curses.color_pair(20))
-            self.tring = "Terminal Output ({} Lines)".format(self.h//2-2)
+            self.tring = "(esc) Terminal Output ({} Lines)".format(self.h//2-2)
             self.stdscr.addstr(self.h-self.h//2-1,self.w//5+1," "*(self.w-self.w//5-1),curses.color_pair(21))
             self.stdscr.addstr(self.h-self.h//2-1,(self.w+self.w//5+1)//2-len(self.tring)//2-1,self.tring,curses.color_pair(21))
         self.k = 0

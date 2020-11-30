@@ -83,6 +83,8 @@ class Trie:
                         path = old
         except:
             pass
+
+# make a list of paths which are in the trie
 file = open('mypaths.txt',"w")
 
 # below is a preloader implemented

@@ -12,11 +12,6 @@ from terminal_lib import Terminal        # Custom self.terminal
 import pickle                            # For fast trie
 import multiprocessing                   # Multiprocess Trie
 import logging as log
-# from depend import empty_right
-
-# log.basicConfig(
-#     filename="# logs.txt", filemode="a", level=# log.INFO,
-# )
 
 # Some global variables
 tries = {}
@@ -39,8 +34,12 @@ def multi_update(m,kk):
 
 # Search Class
 class Search:
-    # init function :: stdscr : standard screen, h,w: screen size, path: current path, cur_row : current row in main menu, overall_path : pickle storage point
+    """
+        init function :: stdscr : standard screen, h,w: screen size, path: current path, cur_row : current row in main menu, overall_path : pickle storage point
+    """
     def __init__(self,stdscr,h,w,path,cur_row,overall_path):
+
+        # make attributes for search instance so that passing variables between functions becomes simple
         self.stdscr = stdscr
         self.h = h
         self.w = w
@@ -50,9 +49,8 @@ class Search:
         self.path_right_now = os.getcwd().replace("/","-")+".pkl"
         self.curr_path = self.overall_path+"/"+self.path_right_now
 
+        # If we have trie stored
         if self.path_right_now not in os.listdir(path=self.overall_path+"/"):
-            # # log.info(self.path_right_now)
-            # # log.info(os.listdir(self.overall_path))
             mn = multiprocessing.Manager()
             m = mn.dict()
             kk = mn.dict()
@@ -64,26 +62,21 @@ class Search:
             pickle.dump(m.values()[0],outfile)
             outfile.close()
             self.trie = m.values()[0]
-        else:
+        else: # else load from pickle
             self.stdscr.addstr(0,2,"Please Wait...",curses.color_pair(5))
             self.stdscr.refresh()
             infile = open(self.curr_path,'rb')
             self.trie = pickle.load(infile)
-            # mn = multiprocessing.Manager()
-            # m = mn.dict()
-            # kk = mn.dict()
-            # kk[0] = 0
-            # m[0] = trie
-            # multiprocessing.Process(target=multi_update,args=(m,kk)).start()
             self.stdscr.addstr(0,2," "*14,curses.color_pair(5))
             self.stdscr.refresh()
 
-        # trie = tries[os.getcwd()]
+        # get some colors for search
         curses.init_pair(18,curses.COLOR_WHITE,18)
         curses.init_pair(19,curses.COLOR_WHITE,63)
         curses.init_pair(100,curses.COLOR_WHITE,35)
-        empty_right(self.stdscr)
+        empty_right(self.stdscr) # empty the middle panel
 
+        # make room for search
         self.stdscr.addstr(0,0," "*self.w,curses.color_pair(18))
         self.stdscr.addstr(0,self.w//5+1,se+" "*(w-w//5-38-len(se)),curses.color_pair(19))
         self.stdscr.addstr(1,(self.w//5+self.w-36)//2-len(seme)//2,"Search Something To See Results Here")
@@ -91,37 +84,48 @@ class Search:
         self.k = 0
         curses.cbreak()
         curses.curs_set(1)
-
         self.stdscr.attron(curses.color_pair(19))
+
+        # global results
         self._results_ = []
         self.result_row = 0
         self.onboard = ""
         curses.cbreak()
         
     def start(self):
+        """
+            start search by taking input from user
+        """
         while 1:
-            # if kk[0]:
-            #     trie = m.values()[0]
-            #     kk[0] = 0
             key = self.stdscr.getch()
+
+            # nothing to do with left key
             if key==curses.KEY_LEFT:
                 continue
+            
+            # Down key
             if key==curses.KEY_DOWN:
                 self.key_down()
                 continue
+
+            # if not up and enter key, then user is continuing the search input
             elif key!=curses.KEY_UP and key!=curses.KEY_ENTER and key!=13 and key!=10:
                 self.result_row = 0
 
+            # Up key for results
             if key==curses.KEY_UP:
                 self.key_up()
                 continue
 
+            # enter key
             if (key==curses.KEY_ENTER or key==10 or key==13 or key==curses.KEY_RIGHT) and self.result_row!=0:
                 return_point = self.key_powerful_enter()
                 if return_point!=None:
                     return return_point
                 continue
 
+            
+            # below code does printing the search results on screen with printing the user typed keys
             curses.curs_set(1)
             self.stdscr.move(0,self.w//5+len(se)+len(self.onboard)+1)
             i = 0
@@ -171,9 +175,9 @@ class Search:
             self.stdscr.move(0,self.w//5+len(se)+len(self.onboard)+1)
             self.stdscr.attron(curses.color_pair(19))
 
+    # key down
     def key_down(self):
         curses.curs_set(0)
-        # if _results_:
         if self.result_row>len(self._results_)-1:
             return
         i = 0
@@ -199,6 +203,7 @@ class Search:
             self.stdscr.addstr(self.result_row+1,self.w//5+2,self._results_[self.result_row][0][:self.w-self.w//5-44]+" ("+str(len(self._results_[self.result_row][1]))+")",curses.color_pair(100))
         self.result_row+=1
 
+    # key up
     def key_up(self):
         curses.curs_set(0)
         if self.result_row<1:
@@ -221,6 +226,7 @@ class Search:
         self.stdscr.addstr(self.result_row,self.w//5+2," "*(self.w-self.w//5-40),curses.color_pair(100))
         self.stdscr.addstr(self.result_row,self.w//5+2,self._results_[self.result_row-1][0][:self.w-self.w//5-44]+" ("+str(len(self._results_[self.result_row-1][1]))+")",curses.color_pair(100))
 
+    # enter to the selected search results, quite complex code
     def key_powerful_enter(self):
         if self.onboard:
             self.ptrr = self.result_row

@@ -1,4 +1,5 @@
 #!usr/bin/python3
+# import dependecies, commented fully in main.py for all these imports
 import curses,time,os
 import getpass,sys,signal
 import shutil
@@ -6,9 +7,17 @@ from distutils.dir_util import copy_tree
 from datetime import datetime
 from depend import *
 from create import *
-import psutil
+try:
+    import psutil           
+except ImportError: # if psutil is not installed
+    os.system("python3 -m pip install psutil")
+    import psutil
+
 
 def show_stat(stdscr,file,dira):
+    """
+        show stats on right panel
+    """
     h,w = stdscr.getmaxyx()
     wn = 37
     if file=="Empty Folder":
@@ -48,6 +57,9 @@ def show_stat(stdscr,file,dira):
 
 
 def bar_single(stdscr,h,w):
+    """
+        RAM and CPU usage
+    """
     curses.init_pair(30,curses.COLOR_BLACK,238)
     curses.init_pair(31,curses.COLOR_BLACK,244)
     cpu = psutil.cpu_percent()

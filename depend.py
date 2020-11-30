@@ -1,13 +1,16 @@
+# import dependencies
 import curses,time,os
 import getpass,sys,signal
 import shutil
 from distutils.dir_util import copy_tree
 from datetime import datetime
 
+# current directory
 os.chdir(".")
 menu = os.listdir()
 menu.sort()
 
+# Some global Strings
 file = "It is a File"
 copy = " Selected File: "
 search = "Ctrl + S to search: "
@@ -15,6 +18,15 @@ options = " c : copy, m : move, k : create file, g : create folder, v : paste"
 
 
 def copy_cur(stdscr,fold,folder,folder_to_be_copied,h,w,path):
+    """
+        This function copies a file or a folder to current folder and updates the screen with current directory contents
+        stdscr : standard screen
+        fold : is it folder or file
+        folder : name of folder/file
+        folder_to_be_copied : path of folder to be copied
+        h,w : screen
+        path : path of current directory
+    """
     if not fold:
         shutil.copy(folder_to_be_copied, os.getcwd()+"/"+folder)
     else:
@@ -34,26 +46,11 @@ def copy_cur(stdscr,fold,folder,folder_to_be_copied,h,w,path):
     a = 0
     return menu,listings,l,cur_row,a
 
-def terminal_call(stdscr,k,path,h,w,terminal,onboard):
-    if terminal==0:
-        pp = "Terminal: "+path
-        stdscr.addstr(0,0,pp+" "*(w-len(path)-10),curses.color_pair(6))
-        terminal = 1
-        k = 0
-        curses.cbreak()
-        curses.curs_set(1)
-        stdscr.addstr(0,len(pp)," ",curses.color_pair(6))
-        stdscr.attron(curses.color_pair(6))
-    else:
-        onboard = ""
-        stdscr.addstr(0,0," "*w,curses.color_pair(5))
-        stdscr.addstr(0,w//2-len(path)//2,path,curses.color_pair(5))
-        curses.curs_set(0)
-        curses.noecho()
-        terminal = 0
-    return onboard,terminal,k
-
 def empty_right(stdscr, full_screen_mode=False):
+    """
+        This function creates room in the middle panel
+        stdscr : standard screen
+    """
     p, w = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(3))
     for i in range(1, p - 2):
@@ -65,6 +62,9 @@ def empty_right(stdscr, full_screen_mode=False):
             stdscr.refresh()
 
 def print_folder(stdscr,row):
+    """
+        print the content of the folder on which the cursor is.
+    """
     try:
         h = list(os.listdir(row))
         p,w = stdscr.getmaxyx()
@@ -85,7 +85,11 @@ def print_folder(stdscr,row):
 
 
 def print_menu(stdscr,listings,n,this,menu):
-    # stdscr.clear()
+    """
+        print the main menu/current directory content on left panel
+        this : name of file/folder on which cursor is.
+        menu : current directory
+    """
     h,w = stdscr.getmaxyx()
     per10screen = w//5
     per = " "*(w//5+1)
@@ -130,11 +134,11 @@ def print_menu(stdscr,listings,n,this,menu):
     stdscr.refresh()
 
 def scrolldown(stdscr,cur_row,menu):
-    # global menu
+    """
+        handle scrolling in left panel
+    """
     h,w = stdscr.getmaxyx()
     per10screen = w//5
-    maxi = 0
-    per = " "*(1+w//5)
     stdscr.attron(curses.color_pair(2))
     for idx in range(cur_row-h+3,cur_row):
         if len(menu[idx])<per10screen:

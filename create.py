@@ -19,6 +19,8 @@ fname = "Folder Name : "
 """
 def getform(stdscr,menu,listings,q):
     h,w = stdscr.getmaxyx()
+    
+    # create a form for user
     curses.init_pair(10,curses.COLOR_WHITE,18)
     stdscr.attron(curses.color_pair(10))
     stdscr.addstr(h-3,w//5+1," "*(4*w//5),curses.color_pair(10))
@@ -26,9 +28,13 @@ def getform(stdscr,menu,listings,q):
         stdscr.addstr(h-3,w//5+1,name,curses.color_pair(10))
     else:
         stdscr.addstr(h-3,w//5+1,fname,curses.color_pair(10))
+
     key = stdscr.getch()
     k = 0
+    # get user input
     onboard = ""
+
+    # until enter is pressed, take input
     while key!=curses.KEY_ENTER and key!=10 and key!=13:
         if key == 8 or key == 127 or key == curses.KEY_BACKSPACE and k>=0:
             if k<0:
@@ -46,11 +52,14 @@ def getform(stdscr,menu,listings,q):
             stdscr.addch(key)
         key = stdscr.getch()
 
+    # if file, then create file
     if onboard!="" and not q:
         file = open(onboard,"w")
         file.close()
-    elif onboard!="" and q:
+    elif onboard!="" and q:  # else folder
         os.mkdir(onboard)
+    
+    # update current directory
     menu = os.listdir()
     menu.sort()
     stdscr.addstr(h-3,w//5+1," "*(4*w//5),curses.color_pair(3))
