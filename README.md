@@ -43,6 +43,21 @@ python3 main.py
 
 4. If it runs into any error, try running `Ctrl + c` to restore into normal state. Run it again to exit from the File Manager!
 
+## Directory Structure 📂
+```
+Pixel Manager
+├─ README.md                   -- Readme
+├─ main.py                     -- main
+├─ depend.py                   -- main dependencies
+├─ stats.py                    -- stats
+├─ create.py                   -- create file/folders
+├─ terminal_lib.py             -- terminal
+├─ search.py                   -- search frontend
+├─ preprocess_trie_hash.py     -- Trie generation
+├─ powerful_editor.py          -- editor
+├─ search_files                -- stores trie
+├─ makefile                    -- makefile
+```
 
 
 ---
