@@ -212,7 +212,7 @@ class Editor:
 
     def options(self,mode):
         if mode=="c":
-            x = (self.w-43)//2
+            x = (self.w-43)//2 # 43 is the length of all the commands is 43 and so to put on middle of screen
             self.stdscr.addstr(self.h-1,0," "*(self.w-1),curses.color_pair(15))
             self.stdscr.addstr(self.h-1,x," esc ",curses.color_pair(15))
             self.stdscr.addstr(self.h-1,x+5,"Command Mode",curses.color_pair(13))

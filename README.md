@@ -133,6 +133,24 @@ Here is how searching looks:
 
 It can search for thousands of files giving results instantly. Scroll and navigate through the found items. 
 
+
+<div><center>Scrolling through results</center></div>
+
+![](https://i.imgur.com/SgiqbB5.png)
+
+
+When searching, top right corner shows the number of search results.
+Scrolling through the search results and then pressing enter will take you to the paths on which the actual file/folder is present.
+
+<div><center>After selecting result, scrolling through the locations where result appear</center></div>
+
+![](https://i.imgur.com/WdlxUxB.png)
+
+After pressing enter on one of the paths, you will be redirected to that location.
+
+<div><center>Search implementation flowchart</center></div>
+
+![](https://i.imgur.com/BVEKoFP.png)
 ---
 ## **List of All Commands** <a name="cmds"></a>
 
