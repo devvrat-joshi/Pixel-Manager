@@ -32,7 +32,7 @@ class Editor:
             self.key_col = ""
             self.extra = ""
 
-        
+        # Change the layout of the screen to editor.        
         self.h,self.w = stdscr.getmaxyx()
         self.path = file_name
         self.stdscr = stdscr
@@ -55,11 +55,17 @@ class Editor:
         return 
 
     def clear_screen(self):
+        """
+            Clear Screen
+        """
         # log.info("YES")
         for i in range(1,self.h-1):
             self.stdscr.addstr(i,0," "*(self.w),curses.color_pair(3))
     
     def print_screen(self,color,range_=None):
+        """
+            Print Screen with color of text as color and range_ as None if there is no visual mode ON.
+        """
         curses.init_pair(44,curses.COLOR_WHITE,51)
         self.clear_screen()
         # [(m.start(0), m.end(0)) for m in re.finditer(self.global_pattern,self.lines[self.scroll_row+i-1][self.scroll_col:self.scroll_col+self.w-self.lenth_of_num-3])]
@@ -113,20 +119,32 @@ class Editor:
 
     @staticmethod
     def tmp_saver(lines,temp_file,num_of_lines):
+        """
+            save files temporary
+        """
         file = open(temp_file,"w")
         for i in range(num_of_lines):
             file.write(lines[i]+"\n")
         file.close()
 
     def move_cursor(self):
+        """
+            change cursor position
+        """
         self.stdscr.move(self.cursor_row,self.cursor_col)
         self.stdscr.refresh()
 
     def print_position(self):
+        """
+            Print position at the bottom right corner.
+        """
         self.stdscr.addstr(self.h-1,self.w-self.w//8," "*(self.w//8-1),curses.color_pair(5))
         self.stdscr.addstr(self.h-1,self.w-self.w//8,"{}, {}".format(self.lines_row+1,self.lines_col+1),curses.color_pair(5))
 
     def replace(self):
+        """
+            Replace all instances of a pattern
+        """
         self.stdscr.addstr(0,0,"REPLACE :",curses.color_pair(60))
         self.stdscr.addstr(0,9," "*(self.w//5-8),curses.color_pair(13))
         replace_on = ""
@@ -168,6 +186,9 @@ class Editor:
                 self.stdscr.addch(key,curses.color_pair(13))
 
     def find(self):
+        """
+            Find all instances of a pattern
+        """
         self.stdscr.addstr(0,4*self.w//5,"FIND :",curses.color_pair(60))
         self.stdscr.addstr(0,4*self.w//5+6," "*(self.w//5-5),curses.color_pair(13))
         while 1:
@@ -211,6 +232,9 @@ class Editor:
         return
 
     def options(self,mode):
+        """
+            different options for editor.
+        """
         if mode=="c":
             x = (self.w-43)//2 # 43 is the length of all the commands is 43 and so to put on middle of screen
             self.stdscr.addstr(self.h-1,0," "*(self.w-1),curses.color_pair(15))
@@ -240,6 +264,9 @@ class Editor:
             self.stdscr.addstr(self.h-1,0," \U0001F40D Python",curses.color_pair(5))
 
     def cur_copy_paste(self):
+        """
+            Cut copy paste
+        """
         curses.init_pair(44,curses.COLOR_WHITE,51)
         store_row = self.lines_row
         store_col = self.lines_col
@@ -350,6 +377,7 @@ class Editor:
 
 
     def key_down(self):
+        # Key Down
         if self.cursor_row<min(self.h-2,self.number_of_lines):
             self.cursor_row+=1
         elif self.number_of_lines-self.h+2>self.scroll_row:
@@ -368,6 +396,7 @@ class Editor:
             self.lines_col = len(self.lines[self.lines_row])
 
     def key_up(self):
+        # Key Up
         if self.cursor_row>1:
             self.cursor_row-=1
         elif self.scroll_row>0:
@@ -386,6 +415,7 @@ class Editor:
             self.lines_col = len(self.lines[self.lines_row])
 
     def key_right(self):
+        # Key Right
         if self.cursor_col<self.w-1 and self.cursor_col<self.left_bound+len(self.lines[self.lines_row]):
             self.cursor_col+=1
         elif self.scroll_col<len(self.lines[self.lines_row])-self.w+self.left_bound+1:
@@ -394,7 +424,9 @@ class Editor:
             self.scroll_col+=1
         if self.lines_col<len(self.lines[self.lines_row]):
             self.lines_col+=1
+            
     def key_left(self):
+        # Key Left
         if self.cursor_col>self.left_bound:
             self.cursor_col-=1
         elif self.scroll_col>0:
@@ -403,6 +435,7 @@ class Editor:
             self.lines_col-=1
 
     def key_enter(self):
+        # Key Enter
         if self.lines_row<self.number_of_lines:
             if self.lines_col==len(self.lines[self.lines_row]):
                 left = self.lines[self.lines_row][:self.lines_col]    
@@ -440,6 +473,7 @@ class Editor:
                         
 
     def key_back(self):
+        # Key Backspace
         if self.lines_col==0:
             if self.lines_row!=0:
                 store_len = len(self.lines[self.lines_row-1])
@@ -472,6 +506,7 @@ class Editor:
             self.lines_col-=1
 
     def key_print(self,key):
+        # Print Key
         self.lines[self.lines_row] = self.lines[self.lines_row][:self.lines_col]+chr(key)+self.lines[self.lines_row][self.lines_col:]
         if self.cursor_col<self.w-1:
             self.cursor_col+=1
@@ -480,6 +515,7 @@ class Editor:
         self.lines_col+=1
 
     def start(self):
+        # Start Main loop of editor
         self.lines = self.file.readlines()
         if len(self.lines)==0:
             self.lines = [""]
@@ -593,77 +629,3 @@ class Editor:
             else:
                 self.key_print(key)
             multiprocessing.Process(target=Editor.tmp_saver,args=(self.lines,self.temp_file,self.number_of_lines,)).start()
-
-
-# else:
-#     if self.lines_col==0:
-#         self.lines[self.lines_row] = self.lines[self.lines_row][:self.lines_col]+chr(key)+" "
-#     else:
-#         self.lines[self.lines_row] = self.lines[self.lines_row][:self.lines_col-1]+chr(key)+" "
-# DOWN
-# if store_row<self.lines_row:
-                #     self.stdscr.addstr(self.cursor_row-1,
-                #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-2][self.scroll_col+self.cursor_col-self.left_bound:min(self.w,len(self.lines[self.scroll_row+self.lines_row-1]))],
-                #                         curses.color_pair(44))
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][:self.scroll_col+self.cursor_col-self.left_bound],
-                #                         curses.color_pair(44))
-                # else:
-                #     self.stdscr.addstr(self.cursor_row-1,
-                #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-2][self.scroll_col+self.cursor_col-self.left_bound:min(self.w,len(self.lines[self.scroll_row+self.lines_row-1]))],
-                #                         curses.color_pair(3))
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][:self.scroll_col+self.cursor_col-self.left_bound],
-                #                         curses.color_pair(3))
-# UP
-                # if store_row>self.lines_row:
-                #     self.stdscr.addstr(self.cursor_row+1,
-                #                         self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row][:self.scroll_col+self.cursor_col-self.left_bound],
-                #                         curses.color_pair(44))
-                #     self.stdscr.addstr(self.cursor_row, 
-                #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound:min(self.w,len(self.lines[self.scroll_row+self.lines_row]))],
-                #                         curses.color_pair(44))
-                # else:
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound:min(self.w,len(self.lines[self.scroll_row+self.lines_row]))],
-                #                         curses.color_pair(3))
-                #     self.stdscr.addstr(self.cursor_row+1,
-                #                         self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row][:self.scroll_col+self.cursor_col-self.left_bound],
-                #                         curses.color_pair(3))
-#Right
-# if self.lines_col>store_col:
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.lenth_of_num+2+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound-1],
-                #                         curses.color_pair(44))
-                # else:
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.lenth_of_num+2+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound-1],
-                #                         curses.color_pair(3))
-            
-            
-            # elif self.lines_col<store_col:
-            #     self.stdscr.addstr(self.cursor_row,
-            #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-            #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound],
-            #                         curses.color_pair(44))
-#LEFT
-# if self.lines_col<store_col:
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound],
-                #                         curses.color_pair(44))
-                # else:
-                #     self.stdscr.addstr(self.cursor_row,
-                #                         self.lenth_of_num+3+self.cursor_col-self.left_bound,
-                #                         self.lines[self.scroll_row+self.cursor_row-1][self.scroll_col+self.cursor_col-self.left_bound],
-                #                         curses.color_pair(3))
