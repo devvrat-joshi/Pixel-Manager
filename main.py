@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# There are total __ number of files with 2000 lines of code.
+# There are total 8 number of files with 2000 lines of code.
 
 import curses,time,os                    # Import some main dependencies
 import getpass,sys,signal                # Used for getting user information and for passing system arguments
